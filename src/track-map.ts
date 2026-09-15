@@ -310,8 +310,12 @@ function zoneIcon(icon: string, color: string): L.DivIcon {
 }
 
 function personIcon(picture: string | undefined, initials: string, color: string): L.DivIcon {
+  // The initials are always there, with the picture laid over them. An image
+  // that does not load leaves an `alt=""` element behind, which is to say an
+  // empty disc -- indistinguishable from a bug in the card. This way a failing
+  // picture degrades to the same marker somebody without a picture gets.
   const inner = picture
-    ? `<img src="${escapeHtml(picture)}" alt="" />`
+    ? `<span>${escapeHtml(initials)}</span><img src="${escapeHtml(picture)}" alt="" />`
     : `<span>${escapeHtml(initials)}</span>`;
   return L.divIcon({
     className: "",

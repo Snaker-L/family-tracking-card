@@ -1354,9 +1354,14 @@ export class FamilyTrackingCard extends LitElement {
     .ftc-marker--person {
       overflow: hidden;
       font-size: 14px;
+      position: relative;
     }
 
+    /* Laid over the initials rather than replacing them, so a picture that
+       fails to load falls back to them instead of to an empty disc. */
     .ftc-marker--person img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;

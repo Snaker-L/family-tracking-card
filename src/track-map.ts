@@ -63,7 +63,10 @@ export interface TrackRenderOptions {
   stays: MapStay[];
   zones: MapZone[];
   onStayClick?: (number: number) => void;
-  /** Changes whenever a new data set was loaded; triggers one auto-fit. */
+  /**
+   * Which persons are drawn. The view is fitted once per distinct value, so a
+   * different time range redraws without moving the map.
+   */
   signature: string;
 }
 
@@ -254,10 +257,6 @@ export class TrackMap {
     }
   }
 
-  /** Re-runs the auto-fit on the next render, e.g. after a person switch. */
-  resetFit(): void {
-    this.fittedSignature = "";
-  }
 }
 
 const escapeHtml = (value: string): string =>

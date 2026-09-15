@@ -121,10 +121,10 @@ instance host to the tile provider.
   The cache is per device — every browser geocodes once for itself.
 - **Person pictures** come from the person entity. Without one, the card falls
   back to initials on a coloured disc — set a picture under Settings → People.
-- **The map fits itself once per data set**, then leaves the view alone. Panning
-  and zooming survive incoming positions, resolved addresses and a switch
-  between street and satellite; only a new time range or a different set of
-  persons moves it again.
+- **The map only re-frames when you change who is on it.** Panning and zooming
+  survive a new time range, incoming positions, resolved addresses and a switch
+  between street and satellite — so you can zoom into a street and then walk
+  through the day with the range buttons. Only the person chips move the view.
 - **A range that ends in the past stops there.** The presets follow the clock
   and keep appending the live position; a window picked from the calendar does
   not, so the track ends where the data ends instead of jumping to wherever

@@ -399,7 +399,6 @@ export class FamilyTrackingCard extends LitElement {
       this._stamps = Object.fromEntries(
         persons.map((person) => [person.entity_id, `${person.state}|${person.last_updated}`])
       );
-      this._map.resetFit();
       void this._loadAll(ids);
       return;
     }
@@ -596,15 +595,19 @@ export class FamilyTrackingCard extends LitElement {
     const zones = this._zones;
 
     /*
-     * What counts as "a new data set" for the one-time auto-fit -- and nothing
-     * more. It used to carry the stay count, the resolved labels and every
-     * person's latest timestamp, which meant that each incoming position and
-     * each address that came back from Nominatim looked like a new data set:
-     * the map re-fitted and threw away wherever the user had zoomed to, a few
-     * seconds after they got there. Only a different query or a different set
-     * of visible persons justifies moving the view.
+     * What moves the view, and nothing else: which persons are on the map.
+     *
+     * The rule used to be "a new data set", which quietly covered far too much.
+     * Every incoming position and every address returned by Nominatim counted,
+     * so the map re-fitted seconds after the user had zoomed somewhere. The time
+     * range counted too, so reaching for another button zoomed back out -- and
+     * that is the one moment where the view matters most, because the question
+     * is what happened *here* over a longer stretch.
+     *
+     * Switching persons still re-frames, because that is a deliberate change of
+     * what the map is about.
      */
-    const fitSignature = [this._lastQuery, this._hidden.join(",")].join("|");
+    const fitSignature = visible.map((person) => person.entity_id).join(",");
 
     /** Everything that changes what is drawn, so the overlay stays current. */
     const paintSignature = [

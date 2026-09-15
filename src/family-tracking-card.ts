@@ -1135,13 +1135,21 @@ export class FamilyTrackingCard extends LitElement {
 
     :host(.ftc-fill) .map-wrap {
       flex: 1 1 auto;
-      /* Keeps the map usable when the chips and the stay list eat the space. */
-      min-height: 160px;
+      /* The floor for two cases: the chips and the stay list eating the space,
+         and a container that has no height to give -- a preview box sizes itself
+         to its contents, so without this the map would be a sliver. */
+      min-height: 240px;
     }
 
+    /* Stretched rather than sized at 100%. A percentage height resolves against
+       the parent's own height, and in fill mode the wrapper has none of its own
+       -- it gets its height from the flex layout. Where nothing hands the card a
+       definite height, the editor preview for one, that percentage collapsed to
+       zero and the map disappeared while everything around it stayed. Filling
+       the positioned parent instead works in both modes. */
     #map-host {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      inset: 0;
       background: var(--secondary-background-color, #f2f2f2);
     }
 

@@ -314,7 +314,10 @@ export const MAX_MAP_HEIGHT = 2000;
 export const DEFAULTS = {
   hours_to_show: 24,
   zoom: 13,
-  time_ranges: [6, 24, 72, 168],
+  // Stunden statt Tagen: der Verlauf eines Arbeitstages ist die Frage, die hier
+  // tatsächlich gestellt wird. Für längere Zeiträume gibt es den Kalender, und
+  // der Recorder hält ohnehin nur zehn Tage vor.
+  time_ranges: [1, 4, 6, 8, 12, 16],
   map_layer: "street" as MapLayerId,
   map_height: 480 as number | typeof FILL_HEIGHT,
   stay_radius: 120,

@@ -66,7 +66,7 @@ views:
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `title` | string | – | Card header |
-| `time_ranges` | list | `[6, 24, 72, 168]` | Preset ranges, in hours; the calendar is always available |
+| `time_ranges` | list | `[1, 4, 6, 8, 12, 16]` | Preset ranges, in hours; the calendar is always available |
 | `map_height` | number \| `fill` | `480` | Height in pixels, or fill the space the card is given |
 | `street_style` | see below | `esri_gray` | Street tiles |
 | `satellite_style` | see below | `esri_imagery` | Satellite tiles |

@@ -1,0 +1,6 @@
+{
+  "name": "Family Tracking Card",
+  "render_readme": true,
+  "filename": "family-tracking-card.js",
+  "homeassistant": "2024.8.0"
+}

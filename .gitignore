@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+.yarn/install-state.gz
+yarn-error.log
+*.tsbuildinfo
+.DS_Store
+
+# Log des lokalen Entwicklungs-Webservers (dev/serve.mjs)
+dev/serve.log
+
+# Bytecode der Hilfsskripte
+__pycache__/
+*.pyc

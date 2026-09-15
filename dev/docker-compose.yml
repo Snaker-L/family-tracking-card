@@ -1,0 +1,22 @@
+# Home Assistant for developing this card.
+#
+# Runs as its own container with a persistent config directory, so the location
+# history survives restarts. That is the whole point: the timeline can only be
+# tested against data that is a few days old.
+services:
+  homeassistant:
+    container_name: ha-dev
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ../../ha-dev/config:/config
+      # The build output is mounted straight in, so `yarn build` plus a hard
+      # refresh is the whole loop. A symlink from scripts/deploy.mjs would not
+      # work here: it points at the repository, which this container does not
+      # see, so it dangles inside /config and Home Assistant answers 404.
+      - ../dist:/config/www/ftc:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=Europe/Vienna
+    restart: unless-stopped
+    ports:
+      - "8123:8123"

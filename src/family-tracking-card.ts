@@ -23,6 +23,14 @@ import { cacheKeyFor, reverseGeocode } from "./geocode";
 import { peekPreviewLayer } from "./preview-layer";
 import { TrackMap, type MapZone, type TileStyleChoice } from "./track-map";
 import { formatCoordinates, formatDistance, formatDuration, formatRange, formatSpan } from "./format";
+import {
+  formatAbsoluteRange,
+  resolveRange,
+  toDateField,
+  toTimeField,
+  type AbsoluteRange,
+  type RangeFields,
+} from "./time-range";
 import type { FamilyTrackingCardConfig, HassEntity, HomeAssistant, TrackPoint } from "./types";
 
 import "./editor";
@@ -68,6 +76,10 @@ export class FamilyTrackingCard extends LitElement {
   @state() private _hidden: string[] = [];
   @state() private _staysOpen = true;
   @state() private _timeRange = DEFAULTS.hours_to_show;
+  /** An absolute range picked from the calendar; overrides the rolling window. */
+  @state() private _range?: AbsoluteRange;
+  @state() private _pickerOpen = false;
+  @state() private _fields: RangeFields = { fromDate: "", toDate: "", fromTime: "", toTime: "" };
   @state() private _mapLayer: MapLayerId = DEFAULTS.map_layer;
 
   @state() private _tracks: Record<string, PersonTrack> = {};
@@ -132,6 +144,7 @@ export class FamilyTrackingCard extends LitElement {
       // runtime toggles start clean: everything still listed is also shown.
       this._hidden = [];
       this._timeRange = DEFAULTS.hours_to_show;
+      this._range = undefined;
       this._mapLayer = layer ?? DEFAULTS.map_layer;
       // Force the first load.
       this._lastQuery = "";
@@ -297,6 +310,11 @@ export class FamilyTrackingCard extends LitElement {
     return entity.attributes.friendly_name ?? entity.entity_id.split(".")[1];
   }
 
+  /** Whether the shown window reaches up to now and keeps following it. */
+  private get _isLive(): boolean {
+    return !this._range || this._range.end >= Date.now();
+  }
+
   private get _showZones(): boolean {
     return this._config?.show_zones ?? DEFAULTS.show_zones;
   }
@@ -357,7 +375,9 @@ export class FamilyTrackingCard extends LitElement {
     if (persons.length === 0) return;
 
     const ids = persons.map((person) => person.entity_id);
-    const query = `${this._timeRange}|${ids.join(",")}`;
+    const query = this._range
+      ? `${this._range.start}-${this._range.end}|${ids.join(",")}`
+      : `${this._timeRange}|${ids.join(",")}`;
 
     if (query !== this._lastQuery) {
       this._lastQuery = query;
@@ -373,7 +393,10 @@ export class FamilyTrackingCard extends LitElement {
       const stamp = `${person.state}|${person.last_updated}`;
       if (this._stamps[person.entity_id] === stamp) continue;
       this._stamps[person.entity_id] = stamp;
-      this._appendCurrent(person.entity_id);
+      // A range that ended in the past must not grow a line to where somebody
+      // happens to be right now. The stamp is still taken, so the position is
+      // not replayed later as if it were new.
+      if (this._isLive) this._appendCurrent(person.entity_id);
     }
   }
 
@@ -384,8 +407,10 @@ export class FamilyTrackingCard extends LitElement {
     this._loading = true;
     this._error = undefined;
 
-    const end = new Date();
-    const start = new Date(end.getTime() - this._timeRange * 3_600_000);
+    const end = this._range ? new Date(this._range.end) : new Date();
+    const start = this._range
+      ? new Date(this._range.start)
+      : new Date(end.getTime() - this._timeRange * 3_600_000);
 
     // One request per person, in parallel. `allSettled` because a single person
     // without recorder data must not blank out everybody else.
@@ -404,7 +429,11 @@ export class FamilyTrackingCard extends LitElement {
         errors.push(reason instanceof HistoryError ? reason.message : String(reason));
         return;
       }
-      tracks[id] = this._trackOf(withCurrentState(result.value, this.hass!, id));
+      // Same reason as above: the live position belongs to a window that
+      // reaches up to now, not to a historical one.
+      tracks[id] = this._trackOf(
+        this._isLive ? withCurrentState(result.value, this.hass!, id) : result.value
+      );
     });
 
     this._tracks = tracks;
@@ -617,8 +646,44 @@ export class FamilyTrackingCard extends LitElement {
   }
 
   private _selectRange(hours: number): void {
-    if (this._timeRange === hours) return;
+    if (this._timeRange === hours && !this._range) return;
     this._timeRange = hours;
+    this._range = undefined;
+    this._pickerOpen = false;
+  }
+
+  /**
+   * Opens the calendar, prefilled with the window currently on screen so there
+   * is something to adjust rather than four empty fields.
+   */
+  private _togglePicker(): void {
+    if (!this._pickerOpen && !this._range) {
+      const end = Date.now();
+      const start = end - this._timeRange * 3_600_000;
+      this._fields = {
+        fromDate: toDateField(start),
+        toDate: toDateField(end),
+        fromTime: toTimeField(start),
+        toTime: toTimeField(end),
+      };
+    }
+    this._pickerOpen = !this._pickerOpen;
+  }
+
+  private _setField(key: keyof RangeFields, value: string): void {
+    this._fields = { ...this._fields, [key]: value };
+  }
+
+  private _applyRange(): void {
+    const range = resolveRange(this._fields);
+    if (!range) return;
+    this._range = range;
+    this._pickerOpen = false;
+  }
+
+  private _clearRange(): void {
+    this._range = undefined;
+    this._pickerOpen = false;
   }
 
   private _toggleLayer(): void {
@@ -639,6 +704,7 @@ export class FamilyTrackingCard extends LitElement {
       : DEFAULTS.time_ranges;
     const height = resolveMapHeight(this._config?.map_height);
     const fill = height === FILL_HEIGHT;
+    const locale = this._locale;
 
     return html`
       <ha-card .header=${this._config?.title}>
@@ -652,13 +718,22 @@ export class FamilyTrackingCard extends LitElement {
             ${ranges.map(
               (hours) => html`
                 <button
-                  class=${hours === this._timeRange ? "chip selected" : "chip"}
+                  class=${hours === this._timeRange && !this._range ? "chip selected" : "chip"}
                   @click=${() => this._selectRange(hours)}
                 >
                   ${formatRange(hours)}
                 </button>
               `
             )}
+            <button
+              class=${this._range ? "chip picked selected" : "chip picked"}
+              @click=${this._togglePicker}
+              aria-expanded=${this._pickerOpen ? "true" : "false"}
+              title="Zeitraum über Kalender und Uhrzeit wählen"
+            >
+              <span class="picker-icon">🗓</span>
+              ${this._range ? formatAbsoluteRange(this._range, locale) : "Zeitraum"}
+            </button>
           </div>
           <button
             class="chip layer"
@@ -669,6 +744,8 @@ export class FamilyTrackingCard extends LitElement {
           </button>
         </div>
 
+        ${this._pickerOpen ? this._renderPicker() : nothing}
+
         <div class="map-wrap" style=${fill ? "" : `height:${height}px`}>
           <div id="map-host"></div>
           ${this._loading ? html`<div class="overlay">Lade Verlauf …</div>` : nothing}
@@ -677,6 +754,63 @@ export class FamilyTrackingCard extends LitElement {
 
         ${this._config?.show_stays === false ? nothing : this._renderStaySection()}
       </ha-card>
+    `;
+  }
+
+  private get _locale(): string {
+    return this.hass?.locale?.language ?? this.hass?.language ?? "de";
+  }
+
+  /**
+   * Calendar and clocks. Native inputs rather than Home Assistant's own date and
+   * time elements: those are loaded on demand and are not something a custom
+   * card can count on being there, and a picker that silently renders as an
+   * empty box is worse than a plain one that works.
+   */
+  private _renderPicker(): TemplateResult {
+    const fields = this._fields;
+    const resolved = resolveRange(fields);
+
+    const field = (
+      label: string,
+      dateKey: "fromDate" | "toDate",
+      timeKey: "fromTime" | "toTime",
+      datePlaceholder?: string
+    ) => html`
+      <label class="picker-field">
+        <span class="picker-label">${label}</span>
+        <input
+          type="date"
+          .value=${fields[dateKey]}
+          placeholder=${datePlaceholder ?? ""}
+          @change=${(ev: Event) => this._setField(dateKey, (ev.target as HTMLInputElement).value)}
+        />
+        <input
+          type="time"
+          .value=${fields[timeKey]}
+          @change=${(ev: Event) => this._setField(timeKey, (ev.target as HTMLInputElement).value)}
+        />
+      </label>
+    `;
+
+    return html`
+      <div class="picker">
+        ${field("Von", "fromDate", "fromTime")}
+        ${field("Bis", "toDate", "toTime", "gleicher Tag")}
+        <div class="picker-foot">
+          <span class="picker-hint">
+            ${resolved
+              ? formatAbsoluteRange(resolved, this._locale)
+              : "Mindestens ein Startdatum wählen."}
+          </span>
+          <button class="chip" ?disabled=${!this._range} @click=${this._clearRange}>
+            Zurücksetzen
+          </button>
+          <button class="chip apply" ?disabled=${!resolved} @click=${this._applyRange}>
+            Anwenden
+          </button>
+        </div>
+      </div>
     `;
   }
 
@@ -903,6 +1037,80 @@ export class FamilyTrackingCard extends LitElement {
       border-color: var(--ftc-track-color);
       background: var(--ftc-track-color);
       color: #fff;
+    }
+
+    .chip.picked {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .picker-icon {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .picker {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 12px;
+      margin: 0 12px 8px;
+      padding: 12px;
+      border: 1px solid var(--divider-color, #e0e0e0);
+      border-radius: 10px;
+      background: var(--secondary-background-color, transparent);
+    }
+
+    .picker-field {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .picker-label {
+      grid-column: 1 / -1;
+      font-size: 12px;
+      color: var(--secondary-text-color);
+    }
+
+    .picker input {
+      padding: 6px 8px;
+      border: 1px solid var(--divider-color, #e0e0e0);
+      border-radius: 6px;
+      background: var(--card-background-color, transparent);
+      color: var(--primary-text-color);
+      font: inherit;
+      font-size: 13px;
+      /* The browser draws its own calendar icon; on a dark theme it is black
+         on black without this. */
+      color-scheme: light dark;
+    }
+
+    .picker-foot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .picker-hint {
+      color: var(--secondary-text-color);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip.apply:not(:disabled) {
+      border-color: var(--ftc-track-color);
+      background: var(--ftc-track-color);
+      color: #fff;
+    }
+
+    .chip:disabled {
+      opacity: 0.4;
+      cursor: default;
     }
 
     .map-wrap {

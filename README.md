@@ -14,6 +14,8 @@ location history into a **readable list of stays** instead of raw coordinates:
 ```
 
 - Every person at once, each in their own colour, with chips to show and hide them
+- Preset ranges, plus a calendar for an exact window: one day, or from date and
+  time to date and time
 - Street and satellite tiles, switchable above the map, without losing pan or zoom
 - Addresses resolved through Nominatim, cached and rate limited
 - Zones drawn as circles, with a per-zone icon and colour
@@ -64,7 +66,7 @@ views:
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `title` | string | – | Card header |
-| `time_ranges` | list | `[6, 24, 72, 168]` | Selectable ranges, in hours |
+| `time_ranges` | list | `[6, 24, 72, 168]` | Preset ranges, in hours; the calendar is always available |
 | `map_height` | number \| `fill` | `480` | Height in pixels, or fill the space the card is given |
 | `street_style` | see below | `esri_gray` | Street tiles |
 | `satellite_style` | see below | `esri_imagery` | Satellite tiles |
@@ -117,6 +119,10 @@ instance host to the tile provider.
   `localStorage` for 30 days. A browser cannot set `User-Agent`, so the card
   identifies itself through the referer and, optionally, `geocode_email`.
   The cache is per device — every browser geocodes once for itself.
+- **A range that ends in the past stops there.** The presets follow the clock
+  and keep appending the live position; a window picked from the calendar does
+  not, so the track ends where the data ends instead of jumping to wherever
+  somebody is right now.
 - **Stays inside a known zone** come straight from the state changes, so arrival
   and departure are exact. Only the parts outside any zone go through
   clustering, which is why those are marked differently on the map.

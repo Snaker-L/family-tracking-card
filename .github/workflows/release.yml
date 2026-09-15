@@ -7,6 +7,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Der eingebaute GITHUB_TOKEN darf in einem neuen Repository nur lesen.
+    # Ohne dieses Recht baut der Lauf die Karte zwar, scheitert aber beim
+    # Anhängen mit "Resource not accessible by integration" -- und das Release
+    # bleibt ohne Datei zurück, womit HACS nichts zu installieren hat.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

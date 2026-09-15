@@ -119,6 +119,12 @@ instance host to the tile provider.
   `localStorage` for 30 days. A browser cannot set `User-Agent`, so the card
   identifies itself through the referer and, optionally, `geocode_email`.
   The cache is per device — every browser geocodes once for itself.
+- **Person pictures** come from the person entity. Without one, the card falls
+  back to initials on a coloured disc — set a picture under Settings → People.
+- **The map fits itself once per data set**, then leaves the view alone. Panning
+  and zooming survive incoming positions, resolved addresses and a switch
+  between street and satellite; only a new time range or a different set of
+  persons moves it again.
 - **A range that ends in the past stops there.** The presets follow the clock
   and keep appending the live position; a window picked from the calendar does
   not, so the track ends where the data ends instead of jumping to wherever

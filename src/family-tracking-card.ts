@@ -70,6 +70,12 @@ interface StayEntry {
 @customElement(CARD_TAG)
 export class FamilyTrackingCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
+  /**
+   * Set by Home Assistant on the preview inside the card editor and the card
+   * picker. Part of its `LovelaceCard` interface, and the only honest way for a
+   * card to know it is not on a dashboard.
+   */
+  @property({ type: Boolean }) public preview = false;
 
   @state() private _config?: FamilyTrackingCardConfig;
   /** Reactive UI state, deliberately separate from the config. */
@@ -253,10 +259,7 @@ export class FamilyTrackingCard extends LitElement {
     // The fill layout has to reach the host: a card can only stretch when the
     // element Home Assistant placed in the view stretches with it, and `:host`
     // rules apply to that element rather than to anything in the template.
-    this.classList.toggle(
-      "ftc-fill",
-      resolveMapHeight(this._config?.map_height) === FILL_HEIGHT
-    );
+    this.classList.toggle("ftc-fill", this._fillHeight);
     this._ensureMap();
     this._maybeReload();
     // Called unconditionally: layer, theme and style each change it, and the
@@ -308,6 +311,18 @@ export class FamilyTrackingCard extends LitElement {
 
   private _name(entity: HassEntity): string {
     return entity.attributes.friendly_name ?? entity.entity_id.split(".")[1];
+  }
+
+  /**
+   * Whether the map should stretch. `fill` needs a container with a height to
+   * fill, and a preview box has none -- it sizes itself to whatever is inside
+   * it. The map would collapse to nothing there while every control around it
+   * stayed, which looks like a broken card rather than a layout that has no
+   * room. The preview therefore falls back to the fixed default height, which
+   * is all it has to do: show what the card looks like, not how tall it gets.
+   */
+  private get _fillHeight(): boolean {
+    return !this.preview && resolveMapHeight(this._config?.map_height) === FILL_HEIGHT;
   }
 
   /** Whether the shown window reaches up to now and keeps following it. */
@@ -580,9 +595,20 @@ export class FamilyTrackingCard extends LitElement {
 
     const zones = this._zones;
 
-    const fitSignature = [
-      this._lastQuery,
-      this._hidden.join(","),
+    /*
+     * What counts as "a new data set" for the one-time auto-fit -- and nothing
+     * more. It used to carry the stay count, the resolved labels and every
+     * person's latest timestamp, which meant that each incoming position and
+     * each address that came back from Nominatim looked like a new data set:
+     * the map re-fitted and threw away wherever the user had zoomed to, a few
+     * seconds after they got there. Only a different query or a different set
+     * of visible persons justifies moving the view.
+     */
+    const fitSignature = [this._lastQuery, this._hidden.join(",")].join("|");
+
+    /** Everything that changes what is drawn, so the overlay stays current. */
+    const paintSignature = [
+      fitSignature,
       entries.length,
       Object.keys(this._labels).length,
       visible
@@ -596,7 +622,7 @@ export class FamilyTrackingCard extends LitElement {
     // Zones are deliberately kept out of the fit signature: switching them on
     // must redraw the overlay, but it must not yank the map back to the
     // auto-fit and throw away wherever the user had panned to.
-    const signature = `${fitSignature}|${zones
+    const signature = `${paintSignature}|${zones
       .map((zone) => `${zone.lat},${zone.lon},${zone.radius},${zone.icon},${zone.color}`)
       .join(";")}`;
     if (signature === this._lastPaint) return;
@@ -702,8 +728,9 @@ export class FamilyTrackingCard extends LitElement {
     const ranges = this._config?.time_ranges?.length
       ? this._config.time_ranges
       : DEFAULTS.time_ranges;
-    const height = resolveMapHeight(this._config?.map_height);
-    const fill = height === FILL_HEIGHT;
+    const configured = resolveMapHeight(this._config?.map_height);
+    const fill = this._fillHeight;
+    const height = configured === FILL_HEIGHT ? DEFAULTS.map_height : configured;
     const locale = this._locale;
 
     return html`
@@ -1135,21 +1162,13 @@ export class FamilyTrackingCard extends LitElement {
 
     :host(.ftc-fill) .map-wrap {
       flex: 1 1 auto;
-      /* The floor for two cases: the chips and the stay list eating the space,
-         and a container that has no height to give -- a preview box sizes itself
-         to its contents, so without this the map would be a sliver. */
-      min-height: 240px;
+      /* Keeps the map usable when the chips and the stay list eat the space. */
+      min-height: 160px;
     }
 
-    /* Stretched rather than sized at 100%. A percentage height resolves against
-       the parent's own height, and in fill mode the wrapper has none of its own
-       -- it gets its height from the flex layout. Where nothing hands the card a
-       definite height, the editor preview for one, that percentage collapsed to
-       zero and the map disappeared while everything around it stayed. Filling
-       the positioned parent instead works in both modes. */
     #map-host {
-      position: absolute;
-      inset: 0;
+      width: 100%;
+      height: 100%;
       background: var(--secondary-background-color, #f2f2f2);
     }
 

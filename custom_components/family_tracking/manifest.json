@@ -1,13 +1,22 @@
 {
   "domain": "family_tracking",
   "name": "Family Tracking",
-  "codeowners": ["@Snaker-L"],
+  "codeowners": [
+    "@Snaker-L"
+  ],
   "config_flow": true,
-  "dependencies": ["http", "frontend", "person", "websocket_api"],
+  "dependencies": [
+    "http",
+    "frontend",
+    "lovelace",
+    "person",
+    "websocket_api"
+  ],
   "documentation": "https://github.com/Snaker-L/family-tracking-card",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Snaker-L/family-tracking-card/issues",
   "requirements": [],
-  "version": "0.4.0"
+  "version": "0.4.0",
+  "after_dependencies": []
 }

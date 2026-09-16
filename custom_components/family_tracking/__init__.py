@@ -31,7 +31,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import FamilyTrackingCoordinator
-from .frontend import async_register_card
+from .frontend import async_register_card, async_remove_resource
 from .geocode import Geocoder
 
 _LOGGER = logging.getLogger(__name__)
@@ -94,6 +94,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # was still holding.
         await data["geocoder"].async_save()
     return unloaded
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Leave nothing behind: a resource pointing at a path that stopped being
+    served would break every dashboard using the card."""
+    await async_remove_resource(hass)
 
 
 async def _async_reload(hass: HomeAssistant, entry: ConfigEntry) -> None:

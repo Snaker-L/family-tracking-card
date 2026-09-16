@@ -16,8 +16,8 @@ instead of raw coordinates.
   <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
 </p>
 
-**One install, no Lovelace resource to register.** The integration serves the
-card and adds it to the frontend itself.
+**One install, nothing to register.** The integration serves the card and keeps
+its Lovelace resource up to date by itself, including after an upgrade.
 
 ## What it does
 

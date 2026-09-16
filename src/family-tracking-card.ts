@@ -23,7 +23,7 @@ import { cacheKeyFor, reverseGeocode } from "./geocode";
 import { peekPreviewLayer } from "./preview-layer";
 import { TrackMap, type MapZone, type TileStyleChoice } from "./track-map";
 import { formatCoordinates, formatDistance, formatDuration, formatRange, formatSpan } from "./format";
-import { localize } from "./localize";
+import { localize, personStateKey } from "./localize";
 import {
   formatAbsoluteRange,
   resolveRange,
@@ -546,9 +546,12 @@ export class FamilyTrackingCard extends LitElement {
   /** `home` and `not_home` are technical states; show what a zone is called. */
   private _zoneName(state: string): string {
     if (state === "home") {
-      return this.hass?.states["zone.home"]?.attributes.friendly_name ?? this._t("card.home");
+      return (
+        this.hass?.states["zone.home"]?.attributes.friendly_name ?? this._t("card.state_home")
+      );
     }
-    return state;
+    const key = personStateKey(state);
+    return key ? this._t(key) : state;
   }
 
   /* ----------------------------------------------------------------- map -- */

@@ -18,6 +18,30 @@ export function languageOf(hassLanguage: string | undefined): string {
   return base in TRANSLATIONS ? base : "en";
 }
 
+/**
+ * The technical states a `person` entity can report instead of a zone name, and
+ * the key that says the same thing in words. Everything else is a zone the user
+ * named themselves and is shown as it is.
+ *
+ * `unknown` means Home Assistant has no position at all, which is not literally
+ * "on the move" -- but for a card about where the family is, the distinction is
+ * one the reader cannot act on, and the raw word is worse than useless. Only
+ * `unavailable` stays apart, because that says the tracker itself is down.
+ */
+const PERSON_STATES: Record<string, string> = {
+  home: "card.state_home",
+  not_home: "card.state_away",
+  unknown: "card.state_away",
+  none: "card.state_away",
+  "": "card.state_away",
+  unavailable: "card.state_unavailable",
+};
+
+/** The translation key for a technical state, or nothing for a zone name. */
+export function personStateKey(state: string | undefined): string | undefined {
+  return PERSON_STATES[(state ?? "").toLowerCase()];
+}
+
 type Vars = Record<string, string | number>;
 
 /**
@@ -53,7 +77,9 @@ const en: Record<string, string> = {
   "card.no_stays": "No stays in this range.",
   "card.no_data": "No location data in this range. The recorder keeps only 10 days by default.",
   "card.load_error": "Could not load history: {error}",
-  "card.home": "Home",
+  "card.state_home": "Home",
+  "card.state_away": "Away",
+  "card.state_unavailable": "Unavailable",
   "card.hide_person": "Hide {name}",
   "card.show_person": "Show {name}",
 
@@ -143,7 +169,9 @@ const de: Record<string, string> = {
   "card.no_data":
     "Keine Positionsdaten im Zeitraum. Der Recorder hält standardmäßig nur 10 Tage vor.",
   "card.load_error": "Verlauf konnte nicht geladen werden: {error}",
-  "card.home": "Zuhause",
+  "card.state_home": "Zuhause",
+  "card.state_away": "Unterwegs",
+  "card.state_unavailable": "Nicht verfügbar",
   "card.hide_person": "{name} ausblenden",
   "card.show_person": "{name} einblenden",
 

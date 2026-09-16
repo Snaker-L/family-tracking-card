@@ -1,7 +1,7 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { LANGUAGES, languageOf, localize } from "../src/localize.ts";
+import { LANGUAGES, languageOf, localize, personStateKey } from "../src/localize.ts";
 import { EDITOR_SCHEMA, SATELLITE_STYLES, STREET_STYLES } from "../src/const.ts";
 
 describe("Sprache bestimmen", () => {
@@ -73,5 +73,35 @@ describe("Vollständigkeit", () => {
   /* Deutsch darf lückenhaft sein -- Englisch nicht, es ist der Rückfall. */
   it("kennt genau die gepflegten Sprachen", () => {
     deepStrictEqual(LANGUAGES, ["en", "de"]);
+  });
+});
+
+describe("Zustände einer Person", () => {
+  /* Die Karte zeigte bisher das rohe Wort aus Home Assistant. */
+  it("benennt die technischen Zustände", () => {
+    strictEqual(localize("de", personStateKey("not_home")!), "Unterwegs");
+    strictEqual(localize("de", personStateKey("unknown")!), "Unterwegs");
+    strictEqual(localize("en", personStateKey("not_home")!), "Away");
+    strictEqual(localize("de", personStateKey("home")!), "Zuhause");
+  });
+
+  it("hält einen ausgefallenen Tracker davon getrennt", () => {
+    strictEqual(localize("de", personStateKey("unavailable")!), "Nicht verfügbar");
+    strictEqual(localize("en", personStateKey("unavailable")!), "Unavailable");
+  });
+
+  it("ignoriert Groß- und Kleinschreibung", () => {
+    strictEqual(personStateKey("NOT_HOME"), personStateKey("not_home"));
+  });
+
+  /* Ein selbst benannter Zonenname muss unangetastet durchgehen. */
+  it("lässt echte Zonennamen in Ruhe", () => {
+    strictEqual(personStateKey("Arbeit"), undefined);
+    strictEqual(personStateKey("Schule"), undefined);
+  });
+
+  it("behandelt Fehlendes wie unterwegs", () => {
+    strictEqual(localize("de", personStateKey("")!), "Unterwegs");
+    strictEqual(localize("de", personStateKey(undefined)!), "Unterwegs");
   });
 });

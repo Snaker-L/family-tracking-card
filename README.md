@@ -8,8 +8,11 @@ A Lovelace card that puts every Home Assistant person on one map and turns their
 location history into a readable list of stays instead of raw coordinates.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list with addresses below" width="370">
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="370">
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list with addresses below" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
+</p>
+<p>
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
 </p>
 
 - Every person at once, each in their own colour, with chips to show and hide them
@@ -52,8 +55,6 @@ views:
         map_height: fill
         show_zones: true
 ```
-
-<img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone, with a live preview" width="740">
 
 ## Options
 

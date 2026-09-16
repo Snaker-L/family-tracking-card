@@ -15,6 +15,11 @@ location history into a **readable list of stays** instead of raw coordinates:
 3  Work                 10:02 – 17:30 · 7 h 28 min
 ```
 
+<p>
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with one person's track, and the stay list below" width="380">
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, showing that the view is kept when switching" width="380">
+</p>
+
 - Every person at once, each in their own colour, with chips to show and hide them
 - Preset ranges, plus a calendar for an exact window: one day, or from date and
   time to date and time

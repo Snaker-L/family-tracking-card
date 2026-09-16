@@ -761,7 +761,12 @@ export class FamilyTrackingCard extends LitElement {
               aria-expanded=${this._pickerOpen ? "true" : "false"}
               title="Zeitraum über Kalender und Uhrzeit wählen"
             >
-              <span class="picker-icon">🗓</span>
+              <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M9 10H7v2h2v-2m4 0h-2v2h2v-2m4 0h-2v2h2v-2m2-7h-1V1h-2v2H8V1H6v2H5a2 2 0 0
+                     0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 16H5V8h14v11Z"
+                />
+              </svg>
               ${this._range ? formatAbsoluteRange(this._range, locale) : "Zeitraum"}
             </button>
           </div>
@@ -1076,9 +1081,14 @@ export class FamilyTrackingCard extends LitElement {
       font-variant-numeric: tabular-nums;
     }
 
+    /* Drawn rather than an emoji. A glyph the font does not carry shows up as
+       an empty box, which is exactly what happened here on both Firefox and
+       headless Chromium -- a path is always there. */
     .picker-icon {
-      font-size: 12px;
-      line-height: 1;
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex: 0 0 auto;
     }
 
     .picker {

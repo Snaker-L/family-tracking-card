@@ -69,11 +69,11 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
       ></ha-form>
       ${this._renderStyles()} ${this._renderColors()} ${this._renderZones()}
       <p class="note">
-        Es werden immer alle Personen angezeigt; über die Chips lassen sich einzelne
-        ein- und ausblenden. Der Knopf rechts über der Karte schaltet zwischen den
-        beiden hier gewählten Stilen um. Die auswählbaren Zeiträume lassen sich nur in YAML setzen,
-        z.&nbsp;B. <code>time_ranges: [6, 24, 72, 168]</code>. Beachte, dass der Recorder
-        standardmäßig nur 10&nbsp;Tage vorhält (<code>purge_keep_days</code>).
+        Der Knopf rechts über der Karte schaltet zwischen den beiden hier gewählten
+        Stilen um. Die Vorgabe-Zeiträume lassen sich nur in YAML ändern, z.&nbsp;B.
+        <code>time_ranges: [1, 4, 6, 8, 12, 16]</code>; der Kalender daneben ist immer da.
+        Beachte, dass der Recorder standardmäßig nur 10&nbsp;Tage vorhält
+        (<code>purge_keep_days</code>).
       </p>
     `;
   }

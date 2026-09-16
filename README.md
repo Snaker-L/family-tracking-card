@@ -53,6 +53,8 @@ views:
         show_zones: true
 ```
 
+<img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone, with a live preview" width="740">
+
 ## Options
 
 | Option | Type | Default | Meaning |
@@ -101,16 +103,6 @@ optional `subdomains`, `attribution`, `max_zoom` and `referrer_policy`.
   does both; results live in `localStorage` for 30 days, per device. A browser
   cannot set `User-Agent`, so `geocode_email` is how you identify yourself.
 - **Person pictures** come from the person entity; without one you get initials.
-
-## Development
-
-```bash
-yarn install && yarn build     # bundle to dist/
-yarn test && yarn typecheck
-```
-
-`dev/ha.sh up` starts a Home Assistant container with this repository's
-`dist/` mounted. See `dev/` for the rest.
 
 ## License
 

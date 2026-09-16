@@ -326,6 +326,8 @@ export const DEFAULTS = {
   // Off by default: an existing card must not suddenly grow circles on its map.
   show_zones: false,
   geocode: true,
+  // Aus: der Zonenname genügt meistens, und jede Auflösung kostet eine Anfrage.
+  zone_addresses: false,
 };
 
 /** A tile source entered by hand, in the spirit of map-card's tile_layer_url. */
@@ -497,6 +499,7 @@ export const EDITOR_SCHEMA = [
       { name: "show_stays", selector: { boolean: {} } },
       { name: "show_zones", selector: { boolean: {} } },
       { name: "geocode", selector: { boolean: {} } },
+      { name: "zone_addresses", selector: { boolean: {} } },
     ],
   },
   { name: "geocode_email", selector: { text: { type: "email" } } },

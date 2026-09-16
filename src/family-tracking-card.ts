@@ -521,9 +521,11 @@ export class FamilyTrackingCard extends LitElement {
   private async _resolveLabels(token: number): Promise<void> {
     if (this._config?.geocode === false) return;
 
+    const includeZones = this._config?.zone_addresses ?? DEFAULTS.zone_addresses;
+
     for (const track of Object.values(this._tracks)) {
       for (const stay of staysOf(track.segments)) {
-        if (stay.zone) continue;
+        if (stay.zone && !includeZones) continue;
         const key = cacheKeyFor(stay.lat, stay.lon);
         if (this._labels[key]) continue;
 
@@ -540,6 +542,18 @@ export class FamilyTrackingCard extends LitElement {
   private _labelOf(stay: Stay): string {
     if (stay.zone) return this._zoneName(stay.zone);
     return this._labels[cacheKeyFor(stay.lat, stay.lon)] ?? formatCoordinates(stay.lat, stay.lon);
+  }
+
+  /**
+   * The street address for a stay whose headline is already a zone name, or
+   * nothing. Only ever filled when `zone_addresses` is on, and only once the
+   * lookup has come back -- the row renders without it in the meantime rather
+   * than jumping once it arrives.
+   */
+  private _addressOf(stay: Stay): string | undefined {
+    if (!stay.zone) return undefined;
+    if (!(this._config?.zone_addresses ?? DEFAULTS.zone_addresses)) return undefined;
+    return this._labels[cacheKeyFor(stay.lat, stay.lon)];
   }
 
   /** `home` and `not_home` are technical states; show what a zone is called. */
@@ -871,9 +885,8 @@ export class FamilyTrackingCard extends LitElement {
         aria-pressed=${visible ? "true" : "false"}
       >
         <span class="avatar">
-          ${picture
-            ? html`<img src=${picture} alt="" />`
-            : html`<span>${initials(this._name(person))}</span>`}
+          <span>${initials(this._name(person))}</span>
+          ${picture ? html`<img src=${picture} alt="" />` : nothing}
         </span>
         <span class="person-text">
           <span class="person-name">${this._name(person)}</span>
@@ -926,6 +939,9 @@ export class FamilyTrackingCard extends LitElement {
                   <span class="stay-person">${this._name(entry.person)}</span>
                   ${this._labelOf(entry.stay)}
                 </span>
+                ${this._addressOf(entry.stay)
+                  ? html`<span class="stay-address">${this._addressOf(entry.stay)}</span>`
+                  : nothing}
                 <span class="stay-meta">
                   ${formatSpan(entry.stay.start, entry.stay.end, locale)} ·
                   ${formatDuration(entry.stay.end - entry.stay.start)}
@@ -1006,6 +1022,7 @@ export class FamilyTrackingCard extends LitElement {
     }
 
     .avatar {
+      position: relative;
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -1021,7 +1038,12 @@ export class FamilyTrackingCard extends LitElement {
       box-shadow: 0 0 0 2px var(--ftc-person-color, var(--ftc-track-color));
     }
 
+    /* Same as the map marker: the initials sit underneath and the picture goes
+       over them, so a picture that fails to load leaves a readable chip rather
+       than a broken image icon. */
     .avatar img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -1313,9 +1335,16 @@ export class FamilyTrackingCard extends LitElement {
     }
 
     .stay-meta,
+    .stay-address,
     .stay-trip {
       font-size: 12px;
       color: var(--secondary-text-color);
+    }
+
+    .stay-address {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .hint {

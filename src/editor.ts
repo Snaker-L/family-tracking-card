@@ -32,6 +32,7 @@ const LABELS: Record<string, string> = {
   show_stays: "Aufenthaltsliste anzeigen",
   show_zones: "Zonen auf der Karte anzeigen",
   geocode: "Adressen auflösen (Nominatim)",
+  zone_addresses: "Adresse auch innerhalb von Zonen",
   geocode_email: "Kontakt-Adresse für Nominatim",
 };
 
@@ -50,6 +51,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
       show_stays: DEFAULTS.show_stays,
       show_zones: DEFAULTS.show_zones,
       geocode: DEFAULTS.geocode,
+      zone_addresses: DEFAULTS.zone_addresses,
       ...this._config,
     };
   }

@@ -320,7 +320,7 @@ describe("Editor-Schema", () => {
     const names = ((grid as { schema: readonly { name: string }[] }).schema ?? []).map(
       (e) => e.name
     );
-    deepStrictEqual([...names], ["show_stays", "show_zones", "geocode"]);
+    deepStrictEqual([...names], ["show_stays", "show_zones", "geocode", "zone_addresses"]);
   });
 
   it("nennt die Altlasten, die beim Speichern entfernt werden", () => {

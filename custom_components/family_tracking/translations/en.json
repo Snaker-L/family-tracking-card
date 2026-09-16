@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Tracking",
+        "description": "Leave the people empty to follow everyone. Nominatim asks for a contact address so it can reach you if something goes wrong.",
+        "data": {
+          "persons": "People to follow",
+          "geocode": "Resolve addresses (Nominatim)",
+          "geocode_email": "Contact address for Nominatim",
+          "max_accuracy": "Ignore fixes worse than",
+          "home_zone": "Home zone",
+          "language": "Address language (empty = your Home Assistant language)"
+        }
+      }
+    },
+    "abort": { "already_configured": "Family Tracking is already set up." }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Family Tracking",
+        "description": "Leave the people empty to follow everyone.",
+        "data": {
+          "persons": "People to follow",
+          "geocode": "Resolve addresses (Nominatim)",
+          "geocode_email": "Contact address for Nominatim",
+          "max_accuracy": "Ignore fixes worse than",
+          "home_zone": "Home zone",
+          "language": "Address language (empty = your Home Assistant language)"
+        }
+      }
+    }
+  }
+}

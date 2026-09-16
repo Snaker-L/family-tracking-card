@@ -17,10 +17,18 @@ const cssAsString = () => ({
   },
 });
 
+/*
+ * The bundle lands inside the integration. Shipping both from one repository is
+ * the point: Home Assistant serves this file itself and adds it to the
+ * frontend, so nobody registers a Lovelace resource by hand or forgets to
+ * update it. `dist/` stays as the build output for the development container.
+ */
+const TARGET = "custom_components/family_tracking/www/family-tracking-card.js";
+
 export default {
   input: "src/family-tracking-card.ts",
   output: {
-    file: "dist/family-tracking-card.js",
+    file: TARGET,
     format: "es",
     inlineDynamicImports: true,
     sourcemap: dev,
@@ -28,7 +36,12 @@ export default {
   plugins: [
     cssAsString(),
     resolve({ browser: true }),
-    typescript({ tsconfig: "tsconfig.json", noEmitOnError: true }),
+    // `outDir` has to sit next to the bundle; the plugin refuses otherwise.
+    typescript({
+      tsconfig: "tsconfig.json",
+      noEmitOnError: true,
+      outDir: "custom_components/family_tracking/www",
+    }),
     ...(dev ? [] : [terser({ format: { comments: false } })]),
   ],
 };

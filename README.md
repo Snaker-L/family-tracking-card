@@ -1,112 +1,145 @@
-# Family Tracking Card
+# Family Tracking
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Release](https://img.shields.io/github/v/release/Snaker-L/family-tracking-card)](https://github.com/Snaker-L/family-tracking-card/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A Lovelace card that puts every Home Assistant person on one map and turns their
-location history into a readable list of stays instead of raw coordinates.
+A Home Assistant integration that works out where each person actually is — and
+a map card, shipped with it, that shows the day as a readable list of stays
+instead of raw coordinates.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list with addresses below" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list below" width="355">
   <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
 </p>
 <p>
   <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
 </p>
 
-- Every person at once, each in their own colour, with chips to show and hide them
-- Preset ranges plus a calendar for an exact window — one day, or date and time to date and time
-- Street and satellite tiles, switchable above the map, without losing pan or zoom
-- Stays with arrival, departure, duration and the distance travelled after them
-- Addresses resolved through Nominatim, cached and rate limited
-- Zones as circles, with a per-zone icon and colour
-- Full GUI editor — no YAML required, and it follows your Home Assistant language
+**One install, no Lovelace resource to register.** The integration serves the
+card and adds it to the frontend itself.
+
+## What it does
+
+**Picks the tracker worth believing.** A person usually carries several — the
+companion app, iCloud, a router that sees the phone on WLAN, a beacon — and they
+disagree constantly. Averaging them puts the person where nobody is; taking the
+newest makes them teleport. Each report is judged instead: a fix reported as
+accurate to 0 m is refused (several trackers mean "no fix" by that), so is one
+worse than your threshold, and so is one older than what we already have. A
+tracker that sees a zone boundary crossed wins regardless of its accuracy;
+otherwise the one being followed keeps the lead until another is measurably
+better. The reason is on the sensor, so a tracker that never wins can be found.
+
+**Says where that is.** Outside a zone the position is reverse geocoded through
+Nominatim — once for the whole household, cached on disk across restarts, and
+queued to one request per second. Inside a zone you get the name you gave it,
+because "School" says more than the road it sits on.
+
+**Presence that is not a yes/no.** `home` and `away` are useless in the two
+minutes that matter, so arriving and leaving get their own states for a few
+minutes: `just_arrived` and `just_left`.
+
+**Distance and direction from home**, so an automation can act before somebody
+pulls into the driveway.
+
+**The map card**: everyone at once in their own colour, preset ranges plus a
+calendar for an exact window, street and satellite tiles, zones as circles with
+their own icon, and the stay list underneath.
 
 ## Install
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Snaker-L&repository=family-tracking-card&category=dashboard)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Snaker-L&repository=family-tracking-card&category=integration)
 
 The button adds this repository to HACS on your own instance; then click
-**Download**. By hand: HACS → Dashboard → ⋮ → *Custom repositories* → URL
-`https://github.com/Snaker-L/family-tracking-card`, category **Dashboard**.
+**Download** and restart Home Assistant. By hand: HACS → ⋮ → *Custom
+repositories* → URL `https://github.com/Snaker-L/family-tracking-card`,
+category **Integration**.
 
-Without HACS: take `family-tracking-card.js` from the
-[latest release](https://github.com/Snaker-L/family-tracking-card/releases/latest),
-drop it in `config/www/`, and add `/local/family-tracking-card.js` as a
-**JavaScript module** under Settings → Dashboards → ⋮ → Resources.
+Then Settings → Devices & services → **Add integration** → *Family Tracking*.
+Leaving the people empty follows everyone, so somebody added later is included
+by themselves.
 
-## Usage
+Add the card to a dashboard from the card picker — it is already there, no
+resource needed.
 
-Add the card from the picker and set it up in the editor. In YAML this is
-enough — every person is included by default:
+### Coming from 0.3.0 or earlier
 
-```yaml
-type: custom:family-tracking-card
-```
+Those versions were a dashboard card. Remove it in HACS, delete the
+`/local/family-tracking-card.js` resource under Settings → Dashboards → ⋮ →
+Resources, then install this. **Leaving the old resource in place breaks the
+card**: the element would be defined twice. Your card configuration is
+unaffected.
 
-Filling the screen in a panel view:
+## Entities
 
-```yaml
-views:
-  - type: panel
-    cards:
-      - type: custom:family-tracking-card
-        map_height: fill
-        show_zones: true
-```
+Per person, one device with:
 
-## Options
+| Entity | State | Notable attributes |
+|---|---|---|
+| `sensor.<name>_location` | zone name, or the address outside one | `presence`, `source`, `latitude`, `longitude`, `gps_accuracy`, `distance_from_home`, `direction`, `street`, `city`, `postcode`, `country`, `last_decision`, `last_rejected` |
+| `sensor.<name>_distance_from_home` | kilometres | `direction` |
+
+`last_decision` says why the current fix was accepted (`first-fix`,
+`zone-change`, `same-source`, `more-accurate`) and `last_rejected` why the most
+recent report was not (`accuracy-zero`, `accuracy-poor`, `stale`,
+`less-accurate`).
+
+## Integration options
+
+Set at install and changeable afterwards under *Configure*:
+
+| Option | Default | Meaning |
+|---|---|---|
+| People to follow | everyone | Which `person` entities to watch |
+| Resolve addresses | on | Reverse geocode positions outside a zone |
+| Contact address | – | Passed to Nominatim, as their usage policy asks |
+| Ignore fixes worse than | 100 m | Above this a fix says more about the radio than the person |
+| Home zone | `zone.home` | Used for distance and direction |
+| Address language | your HA language | Two-letter code |
+
+## Card options
 
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `title` | string | – | Card header |
 | `time_ranges` | list | `[1, 4, 6, 8, 12, 16]` | Preset ranges in hours; the calendar is always there |
-| `map_height` | number \| `fill` | `480` | Height in pixels, or fill the space the card is given |
-| `street_style` | see below | `esri_gray` | Street tiles |
-| `satellite_style` | see below | `esri_imagery` | Satellite tiles |
+| `map_height` | number \\| `fill` | `480` | Height in pixels, or fill the space the card is given |
+| `street_style` / `satellite_style` | see below | `esri_gray` / `esri_imagery` | Tiles |
 | `custom_street` / `custom_satellite` | map | – | Own tile URL, when the style is `custom` |
-| `person_colors` | map | palette | Colour per entity id, e.g. `person.anna: "#7c4dff"` |
-| `hidden_persons` | list | `[]` | Persons the card leaves out entirely |
+| `person_colors` | map | palette | Colour per entity id |
+| `hidden_persons` | list | `[]` | People the card leaves out entirely |
 | `show_stays` | boolean | `true` | Stay list below the map |
 | `show_zones` | boolean | `false` | Draw zones as circles with their icon |
 | `zone_icons` / `zone_colors` | map | – | Icon and colour per zone |
 | `hidden_zones` | list | `[]` | Zones the card leaves out |
-| `geocode` | boolean | `true` | Resolve addresses via Nominatim |
-| `geocode_email` | string | – | Contact address, see the Nominatim usage policy |
+| `geocode` | boolean | `true` | Resolve addresses for stays |
+| `geocode_email` | string | – | Only used without the integration |
 
-`hidden_persons` and `hidden_zones` store what is *excluded*, so anything you
-add to Home Assistant later shows up instead of going missing.
+`hidden_persons` and `hidden_zones` store what is *excluded*, so anything added
+later shows up instead of going missing.
 
-### Tile styles
-
-`street_style`: `osm`, `esri_gray` (follows your theme), `esri_streets`,
-`esri_topo`, `esri_relief`, `osm_hot`, `opentopo`, `basemap_at`,
-`basemap_at_gray`, `custom`
-
-`satellite_style`: `esri_imagery`, `esri_hybrid`, `basemap_at_ortho`,
-`basemap_at_ortho_labels`, `custom`
-
-The `basemap_at` styles cover Austria only. A custom source takes a `url` plus
-optional `subdomains`, `attribution`, `max_zoom` and `referrer_policy`.
+Tile styles — `street_style`: `osm`, `esri_gray` (follows your theme),
+`esri_streets`, `esri_topo`, `esri_relief`, `osm_hot`, `opentopo`,
+`basemap_at`, `basemap_at_gray`, `custom`. `satellite_style`:
+`esri_imagery`, `esri_hybrid`, `basemap_at_ortho`,
+`basemap_at_ortho_labels`, `custom`. The `basemap_at` ones cover Austria only.
 
 ## Good to know
 
 - **The recorder keeps 10 days by default**, so longer ranges come up empty.
   Raise `purge_keep_days` if you need more.
 - **A stay inside a zone is exact** — arrival and departure come from the state
-  changes. Only the parts outside any zone are clustered, which is why those
-  markers look different.
+  changes. Only the parts outside any zone are clustered.
 - **The map re-frames only when you change who is on it.** A new time range,
-  incoming positions and switching to satellite all leave your view alone.
-- **Nominatim allows one request per second and requires caching.** The card
-  does both; results live in `localStorage` for 30 days, per device. A browser
-  cannot set `User-Agent`, so `geocode_email` is how you identify yourself.
+  incoming positions and switching to satellite leave your view alone.
+- **Nominatim allows one request per second and asks for caching.** The
+  integration does both, for the whole household at once.
+- **Both speak your language.** English and German are translated; anything else
+  falls back to English. A language is one table in
+  [`src/localize.ts`](src/localize.ts) and one file under
+  [`custom_components/family_tracking/translations/`](custom_components/family_tracking/translations/).
 - **Person pictures** come from the person entity; without one you get initials.
-- **The card speaks your language.** It follows the language set in Home
-  Assistant. English and German are translated; anything else falls back to
-  English. A new language is one table in
-  [`src/localize.ts`](src/localize.ts) — pull requests welcome.
 
 ## License
 

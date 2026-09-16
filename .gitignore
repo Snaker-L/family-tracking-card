@@ -14,3 +14,6 @@ dev/serve.log
 # Bytecode der Hilfsskripte
 __pycache__/
 *.pyc
+
+# Das Kartenbündel wird gebaut und beim Release beigelegt
+custom_components/family_tracking/www/

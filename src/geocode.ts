@@ -20,6 +20,47 @@ export interface GeocodeOptions {
   /** Contact address forwarded to Nominatim, see their usage policy. */
   email?: string;
   language?: string;
+  /**
+   * Home Assistant's websocket call. When the Family Tracking integration is
+   * installed it answers `family_tracking/geocode`, and then the lookup belongs
+   * there: one cache for every browser in the house instead of one per device,
+   * one queue honouring the rate limit, and results that survive a cleared
+   * browser storage. Without the integration the card asks Nominatim itself,
+   * exactly as before.
+   */
+  callWS?: <T>(message: Record<string, unknown>) => Promise<T>;
+}
+
+/** Remembers a missing integration, so the card asks once and not per stay. */
+let serverGeocoding: boolean | undefined;
+
+/** Test helper: forget whether the integration answered. */
+export function resetServerGeocoding(): void {
+  serverGeocoding = undefined;
+}
+
+async function viaServer(
+  lat: number,
+  lon: number,
+  options: GeocodeOptions
+): Promise<string | undefined | null> {
+  if (!options.callWS || serverGeocoding === false) return null;
+  try {
+    const result = await options.callWS<{ label?: string } | null>({
+      type: "family_tracking/geocode",
+      latitude: lat,
+      longitude: lon,
+      language: options.language,
+    });
+    serverGeocoding = true;
+    return result?.label || undefined;
+  } catch {
+    // Either the integration is not installed or it is not ready. Both mean the
+    // card has to do it itself, and asking again for every stay would only cost
+    // a round trip each time.
+    serverGeocoding = false;
+    return null;
+  }
 }
 
 interface CacheEntry {
@@ -112,6 +153,15 @@ export async function reverseGeocode(
   const key = cacheKeyFor(lat, lon);
   const hit = cache().get(key);
   if (hit) return hit.label;
+
+  const server = await viaServer(lat, lon, options);
+  if (server !== null) {
+    // The server has its own cache; keeping a copy here saves the round trip
+    // for the stays already on screen.
+    if (server) cache().set(key, { label: server, at: Date.now() });
+    persist();
+    return server;
+  }
 
   return schedule(async () => {
     // A second lookup may have filled the cache while this one was queued.

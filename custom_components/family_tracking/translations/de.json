@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Tracking",
+        "description": "Ohne Auswahl werden alle Personen verfolgt. Nominatim bittet um eine Kontaktadresse, damit man dich erreichen kann, wenn etwas schiefläuft.",
+        "data": {
+          "persons": "Zu verfolgende Personen",
+          "geocode": "Adressen auflösen (Nominatim)",
+          "geocode_email": "Kontaktadresse für Nominatim",
+          "max_accuracy": "Messungen verwerfen ab",
+          "home_zone": "Heimzone",
+          "language": "Sprache der Adressen (leer = Sprache von Home Assistant)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Family Tracking ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Family Tracking",
+        "description": "Ohne Auswahl werden alle Personen verfolgt.",
+        "data": {
+          "persons": "Zu verfolgende Personen",
+          "geocode": "Adressen auflösen (Nominatim)",
+          "geocode_email": "Kontaktadresse für Nominatim",
+          "max_accuracy": "Messungen verwerfen ab",
+          "home_zone": "Heimzone",
+          "language": "Sprache der Adressen (leer = Sprache von Home Assistant)"
+        }
+      }
+    }
+  }
+}

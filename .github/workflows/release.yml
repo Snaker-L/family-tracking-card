@@ -7,10 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Der eingebaute GITHUB_TOKEN darf in einem neuen Repository nur lesen.
-    # Ohne dieses Recht baut der Lauf die Karte zwar, scheitert aber beim
-    # Anhängen mit "Resource not accessible by integration" -- und das Release
-    # bleibt ohne Datei zurück, womit HACS nichts zu installieren hat.
+    # The built-in GITHUB_TOKEN may only read in a new repository. Without this
+    # the run builds the card but fails to attach it, leaving a release with no
+    # file -- and nothing for HACS to install.
     permissions:
       contents: write
     steps:
@@ -22,8 +21,25 @@ jobs:
       - run: yarn install --immutable
       - run: yarn typecheck
       - run: yarn test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pytest
+      - run: pytest tests -q
+
+      # Builds the card straight into the integration, which then serves it.
       - run: yarn build
-      - name: Attach card to release
+
+      # HACS installs an integration from a zip whose root is the contents of
+      # custom_components/<domain>. Keeping the built bundle out of the
+      # repository and inside the release is what lets both live here.
+      - name: Package the integration
+        run: |
+          cd custom_components/family_tracking
+          zip -r "$GITHUB_WORKSPACE/family_tracking.zip" . -x '*.pyc' -x '__pycache__/*'
+
+      - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/family-tracking-card.js
+          files: family_tracking.zip

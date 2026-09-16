@@ -23,6 +23,7 @@ import { cacheKeyFor, reverseGeocode } from "./geocode";
 import { peekPreviewLayer } from "./preview-layer";
 import { TrackMap, type MapZone, type TileStyleChoice } from "./track-map";
 import { formatCoordinates, formatDistance, formatDuration, formatRange, formatSpan } from "./format";
+import { localize } from "./localize";
 import {
   formatAbsoluteRange,
   resolveRange,
@@ -521,11 +522,9 @@ export class FamilyTrackingCard extends LitElement {
   private async _resolveLabels(token: number): Promise<void> {
     if (this._config?.geocode === false) return;
 
-    const includeZones = this._config?.zone_addresses ?? DEFAULTS.zone_addresses;
-
     for (const track of Object.values(this._tracks)) {
       for (const stay of staysOf(track.segments)) {
-        if (stay.zone && !includeZones) continue;
+        if (stay.zone) continue;
         const key = cacheKeyFor(stay.lat, stay.lon);
         if (this._labels[key]) continue;
 
@@ -544,22 +543,10 @@ export class FamilyTrackingCard extends LitElement {
     return this._labels[cacheKeyFor(stay.lat, stay.lon)] ?? formatCoordinates(stay.lat, stay.lon);
   }
 
-  /**
-   * The street address for a stay whose headline is already a zone name, or
-   * nothing. Only ever filled when `zone_addresses` is on, and only once the
-   * lookup has come back -- the row renders without it in the meantime rather
-   * than jumping once it arrives.
-   */
-  private _addressOf(stay: Stay): string | undefined {
-    if (!stay.zone) return undefined;
-    if (!(this._config?.zone_addresses ?? DEFAULTS.zone_addresses)) return undefined;
-    return this._labels[cacheKeyFor(stay.lat, stay.lon)];
-  }
-
   /** `home` and `not_home` are technical states; show what a zone is called. */
   private _zoneName(state: string): string {
     if (state === "home") {
-      return this.hass?.states["zone.home"]?.attributes.friendly_name ?? "Home";
+      return this.hass?.states["zone.home"]?.attributes.friendly_name ?? this._t("card.home");
     }
     return state;
   }
@@ -754,7 +741,7 @@ export class FamilyTrackingCard extends LitElement {
       <ha-card .header=${this._config?.title}>
         <div class="people">
           ${persons.map((person) => this._renderPerson(person))}
-          ${persons.length === 0 ? html`<div class="hint">No person entity found.</div>` : nothing}
+          ${persons.length === 0 ? html`<div class="hint">${this._t("card.no_persons")}</div>` : nothing}
         </div>
 
         <div class="controls">
@@ -773,7 +760,7 @@ export class FamilyTrackingCard extends LitElement {
               class=${this._range ? "chip picked selected" : "chip picked"}
               @click=${this._togglePicker}
               aria-expanded=${this._pickerOpen ? "true" : "false"}
-              title="Pick a range from the calendar"
+              title=${this._t("card.range_title")}
             >
               <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -781,15 +768,19 @@ export class FamilyTrackingCard extends LitElement {
                      0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 16H5V8h14v11Z"
                 />
               </svg>
-              ${this._range ? formatAbsoluteRange(this._range, locale) : "Range"}
+              ${this._range ? formatAbsoluteRange(this._range, locale) : this._t("card.range")}
             </button>
           </div>
           <button
             class="chip layer"
             @click=${this._toggleLayer}
-            title=${`Current: ${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).label}`}
+            title=${this._t("card.layer_current", {
+              label: this._t(
+                `style.${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).id}`
+              ),
+            })}
           >
-            ${this._mapLayer === "street" ? "Satellite" : "Map"}
+            ${this._t(this._mapLayer === "street" ? "card.layer_to_satellite" : "card.layer_to_street")}
           </button>
         </div>
 
@@ -797,7 +788,7 @@ export class FamilyTrackingCard extends LitElement {
 
         <div class="map-wrap" style=${fill ? "" : `height:${height}px`}>
           <div id="map-host"></div>
-          ${this._loading ? html`<div class="overlay">Loading history …</div>` : nothing}
+          ${this._loading ? html`<div class="overlay">${this._t("card.loading")}</div>` : nothing}
           ${this._error ? html`<div class="overlay error">${this._errorText()}</div>` : nothing}
         </div>
 
@@ -808,6 +799,11 @@ export class FamilyTrackingCard extends LitElement {
 
   private get _locale(): string {
     return this.hass?.locale?.language ?? this.hass?.language ?? "en";
+  }
+
+  /** Short hand for the translations; the language comes from Home Assistant. */
+  private _t(key: string, vars?: Record<string, string | number>): string {
+    return localize(this._locale, key, vars);
   }
 
   /**
@@ -844,19 +840,19 @@ export class FamilyTrackingCard extends LitElement {
 
     return html`
       <div class="picker">
-        ${field("From", "fromDate", "fromTime")}
-        ${field("To", "toDate", "toTime", "same day")}
+        ${field(this._t("card.from"), "fromDate", "fromTime")}
+        ${field(this._t("card.to"), "toDate", "toTime", this._t("card.same_day"))}
         <div class="picker-foot">
           <span class="picker-hint">
             ${resolved
               ? formatAbsoluteRange(resolved, this._locale)
-              : "Pick a start date."}
+              : this._t("card.pick_start")}
           </span>
           <button class="chip" ?disabled=${!this._range} @click=${this._clearRange}>
-            Reset
+            ${this._t("card.reset")}
           </button>
           <button class="chip apply" ?disabled=${!resolved} @click=${this._applyRange}>
-            Apply
+            ${this._t("card.apply")}
           </button>
         </div>
       </div>
@@ -881,7 +877,9 @@ export class FamilyTrackingCard extends LitElement {
         class=${visible ? "person shown" : "person hidden"}
         style=${`--ftc-person-color:${color}`}
         @click=${() => this._togglePerson(person.entity_id)}
-        title=${visible ? `Hide ${this._name(person)}` : `Show ${this._name(person)}`}
+        title=${this._t(visible ? "card.hide_person" : "card.show_person", {
+          name: this._name(person),
+        })}
         aria-pressed=${visible ? "true" : "false"}
       >
         <span class="avatar">
@@ -907,7 +905,7 @@ export class FamilyTrackingCard extends LitElement {
           aria-expanded=${this._staysOpen ? "true" : "false"}
         >
           <span class=${this._staysOpen ? "caret open" : "caret"}>▸</span>
-          <span>Stays</span>
+          <span>${this._t("card.stays")}</span>
           <span class="stays-count">${count}</span>
         </button>
       </div>
@@ -918,7 +916,7 @@ export class FamilyTrackingCard extends LitElement {
   private _renderStays(): TemplateResult {
     const entries = this._stayEntries;
     if (entries.length === 0) {
-      return html`<div class="stays empty">${this._loading ? "" : "No stays in this range."}</div>`;
+      return html`<div class="stays empty">${this._loading ? "" : this._t("card.no_stays")}</div>`;
     }
 
     const locale = this.hass?.locale?.language ?? this.hass?.language ?? "en";
@@ -939,9 +937,6 @@ export class FamilyTrackingCard extends LitElement {
                   <span class="stay-person">${this._name(entry.person)}</span>
                   ${this._labelOf(entry.stay)}
                 </span>
-                ${this._addressOf(entry.stay)
-                  ? html`<span class="stay-address">${this._addressOf(entry.stay)}</span>`
-                  : nothing}
                 <span class="stay-meta">
                   ${formatSpan(entry.stay.start, entry.stay.end, locale)} ·
                   ${formatDuration(entry.stay.end - entry.stay.start)}
@@ -959,9 +954,9 @@ export class FamilyTrackingCard extends LitElement {
 
   private _errorText(): string {
     if (this._error === "no-data") {
-      return "No location data in this range. The recorder keeps only 10 days by default.";
+      return this._t("card.no_data");
     }
-    return `Could not load history: ${this._error}`;
+    return this._t("card.load_error", { error: String(this._error) });
   }
 
   static override styles = css`
@@ -1335,16 +1330,9 @@ export class FamilyTrackingCard extends LitElement {
     }
 
     .stay-meta,
-    .stay-address,
     .stay-trip {
       font-size: 12px;
       color: var(--secondary-text-color);
-    }
-
-    .stay-address {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .hint {

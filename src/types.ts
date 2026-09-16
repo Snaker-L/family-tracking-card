@@ -76,12 +76,6 @@ export interface FamilyTrackingCardConfig extends LovelaceCardConfig {
   /** Zones the map leaves out, stored the same way round as `hidden_persons`. */
   hidden_zones?: string[];
   geocode?: boolean;
-  /**
-   * Also resolve an address for stays that already sit inside a zone, shown as
-   * a second line under the zone name. Off by default: a zone already carries
-   * the name the user gave it, and every extra lookup costs a Nominatim request.
-   */
-  zone_addresses?: boolean;
   /** Optional contact address appended to Nominatim requests (their usage policy). */
   geocode_email?: string;
 }

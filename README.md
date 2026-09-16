@@ -21,7 +21,7 @@ location history into a readable list of stays instead of raw coordinates.
 - Stays with arrival, departure, duration and the distance travelled after them
 - Addresses resolved through Nominatim, cached and rate limited
 - Zones as circles, with a per-zone icon and colour
-- Full GUI editor — no YAML required
+- Full GUI editor — no YAML required, and it follows your Home Assistant language
 
 ## Install
 
@@ -73,7 +73,6 @@ views:
 | `zone_icons` / `zone_colors` | map | – | Icon and colour per zone |
 | `hidden_zones` | list | `[]` | Zones the card leaves out |
 | `geocode` | boolean | `true` | Resolve addresses via Nominatim |
-| `zone_addresses` | boolean | `false` | Also show an address for stays inside a zone |
 | `geocode_email` | string | – | Contact address, see the Nominatim usage policy |
 
 `hidden_persons` and `hidden_zones` store what is *excluded*, so anything you
@@ -104,6 +103,10 @@ optional `subdomains`, `attribution`, `max_zoom` and `referrer_policy`.
   does both; results live in `localStorage` for 30 days, per device. A browser
   cannot set `User-Agent`, so `geocode_email` is how you identify yourself.
 - **Person pictures** come from the person entity; without one you get initials.
+- **The card speaks your language.** It follows the language set in Home
+  Assistant. English and German are translated; anything else falls back to
+  English. A new language is one table in
+  [`src/localize.ts`](src/localize.ts) — pull requests welcome.
 
 ## License
 

@@ -326,8 +326,6 @@ export const DEFAULTS = {
   // Off by default: an existing card must not suddenly grow circles on its map.
   show_zones: false,
   geocode: true,
-  // Off: the zone name is usually enough, and every lookup costs a request.
-  zone_addresses: false,
 };
 
 /** A tile source entered by hand, in the spirit of map-card's tile_layer_url. */
@@ -366,6 +364,8 @@ export function toReferrerPolicy(value: string | undefined): ReferrerPolicy | un
 export interface ResolvedStyle {
   /** Identifies the exact layer set; two different choices must never match. */
   key: string;
+  /** The style id, e.g. `esri_gray`. Used to look up its translated name. */
+  id: string;
   label: string;
   attribution: string;
   layers: readonly TileSpec[];
@@ -395,6 +395,7 @@ export function resolveStyle(layer: MapLayerId, dark: boolean, styles: StyleChoi
     if (custom?.url) {
       return {
         key: `${layer}:custom:${custom.url}`,
+        id: CUSTOM_STYLE,
         label: "Custom URL",
         attribution: custom.attribution ?? "",
         layers: [
@@ -415,8 +416,10 @@ export function resolveStyle(layer: MapLayerId, dark: boolean, styles: StyleChoi
   const satelliteId = id === CUSTOM_STYLE ? DEFAULT_SATELLITE_STYLE : (id as SatelliteStyleId);
   const style: TileStyle = layer === "street" ? STREET_STYLES[streetId] : SATELLITE_STYLES[satelliteId];
   const useDark = dark && style.darkLayers !== undefined;
+  const resolvedId = layer === "street" ? streetId : satelliteId;
   return {
-    key: `${layer}:${layer === "street" ? streetId : satelliteId}:${useDark ? "dark" : "light"}`,
+    key: `${layer}:${resolvedId}:${useDark ? "dark" : "light"}`,
+    id: resolvedId,
     label: style.label,
     attribution: style.attribution,
     layers: useDark ? style.darkLayers! : style.layers,
@@ -499,7 +502,6 @@ export const EDITOR_SCHEMA = [
       { name: "show_stays", selector: { boolean: {} } },
       { name: "show_zones", selector: { boolean: {} } },
       { name: "geocode", selector: { boolean: {} } },
-      { name: "zone_addresses", selector: { boolean: {} } },
     ],
   },
   { name: "geocode_email", selector: { text: { type: "email" } } },

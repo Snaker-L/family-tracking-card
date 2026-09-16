@@ -18,6 +18,7 @@ import {
   zoneVisual,
 } from "./const";
 import type { CustomTileLayer } from "./const";
+import { localize } from "./localize";
 import { notePreviewLayer } from "./preview-layer";
 import type {
   FamilyTrackingCardConfig,
@@ -27,19 +28,16 @@ import type {
 } from "./types";
 
 
-const LABELS: Record<string, string> = {
-  title: "Title",
-  show_stays: "Show the stay list",
-  show_zones: "Show zones on the map",
-  geocode: "Resolve addresses (Nominatim)",
-  zone_addresses: "Address inside zones too",
-  geocode_email: "Contact address for Nominatim",
-};
 
 @customElement(EDITOR_TAG)
 export class FamilyTrackingCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private _config?: FamilyTrackingCardConfig;
+
+  /** Short hand for the translations; the language comes from Home Assistant. */
+  private _t(key: string, vars?: Record<string, string | number>): string {
+    return localize(this.hass?.locale?.language ?? this.hass?.language, key, vars);
+  }
 
   public setConfig(config: FamilyTrackingCardConfig): void {
     this._config = config;
@@ -51,7 +49,6 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
       show_stays: DEFAULTS.show_stays,
       show_zones: DEFAULTS.show_zones,
       geocode: DEFAULTS.geocode,
-      zone_addresses: DEFAULTS.zone_addresses,
       ...this._config,
     };
   }
@@ -64,16 +61,12 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
         .hass=${this.hass}
         .data=${this._data}
         .schema=${EDITOR_SCHEMA}
-        .computeLabel=${(entry: { name: string }) => LABELS[entry.name] ?? entry.name}
+        .computeLabel=${(entry: { name: string }) => this._t(`editor.${entry.name}`)}
         @value-changed=${this._valueChanged}
       ></ha-form>
       ${this._renderStyles()} ${this._renderColors()} ${this._renderZones()}
       <p class="note">
-        The button above the map on the right switches between the two styles
-        chosen here. The preset ranges can only be changed in YAML, e.&nbsp;g.
-        <code>time_ranges: [1, 4, 6, 8, 12, 16]</code>; the calendar next to them is
-        always available. Note that the recorder keeps only 10&nbsp;days by default
-        (<code>purge_keep_days</code>).
+        ${this._t("editor.note")}
       </p>
     `;
   }
@@ -97,12 +90,14 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
           .value=${current}
           @change=${(ev: Event) => this._setStyle(key, (ev.target as HTMLSelectElement).value)}
         >
-          ${Object.entries(options).map(
-            ([value, option]) => html`
-              <option value=${value} ?selected=${value === current}>${option.label}</option>
+          ${Object.keys(options).map(
+            (value) => html`
+              <option value=${value} ?selected=${value === current}>
+                ${this._t(`style.${value}`)}
+              </option>
             `
           )}
-          <option value=${CUSTOM_STYLE} ?selected=${current === CUSTOM_STYLE}>Custom URL …</option>
+          <option value=${CUSTOM_STYLE} ?selected=${current === CUSTOM_STYLE}>${this._t("editor.custom_option")}</option>
         </select>
       </label>
     `;
@@ -110,14 +105,14 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
     return html`
       ${this._renderHeight()}
       <div class="styles">
-        ${picker("Street map", "street_style", STREET_STYLES, styles.street)}
-        ${picker("Satellite map", "satellite_style", SATELLITE_STYLES, styles.satellite)}
+        ${picker(this._t("editor.street_map"), "street_style", STREET_STYLES, styles.street)}
+        ${picker(this._t("editor.satellite_map"), "satellite_style", SATELLITE_STYLES, styles.satellite)}
       </div>
       ${styles.street === CUSTOM_STYLE
-        ? this._renderCustomTile("Street map", "custom_street", this._config?.custom_street)
+        ? this._renderCustomTile(this._t("editor.street_map"), "custom_street", this._config?.custom_street)
         : nothing}
       ${styles.satellite === CUSTOM_STYLE
-        ? this._renderCustomTile("Satellite map", "custom_satellite", this._config?.custom_satellite)
+        ? this._renderCustomTile(this._t("editor.satellite_map"), "custom_satellite", this._config?.custom_satellite)
         : nothing}
     `;
   }
@@ -134,7 +129,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
     return html`
       <div class="height">
         <label class="style-field">
-          <span class="style-label">Map height</span>
+          <span class="style-label">${this._t("editor.map_height")}</span>
           <select
             @change=${(ev: Event) =>
               this._setHeight(
@@ -143,9 +138,9 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
                   : DEFAULTS.map_height
               )}
           >
-            <option value="fixed" ?selected=${!fill}>Fixed height</option>
+            <option value="fixed" ?selected=${!fill}>${this._t("editor.height_fixed")}</option>
             <option value=${FILL_HEIGHT} ?selected=${fill}>
-              Fill the available space
+              ${this._t("editor.height_fill")}
             </option>
           </select>
         </label>
@@ -153,7 +148,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
           ? nothing
           : html`
               <label class="style-field">
-                <span class="style-label">Height in pixels</span>
+                <span class="style-label">${this._t("editor.height_pixels")}</span>
                 <input
                   type="number"
                   min=${MIN_MAP_HEIGHT}
@@ -168,9 +163,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
       </div>
       ${fill
         ? html`<div class="height-hint">
-            The card takes whatever height the dashboard gives it. That only
-            works in a panel view, which hands a single card the whole screen —
-            in a normal column view a fixed height is the right answer.
+            ${this._t("editor.height_hint")}
           </div>`
         : nothing}
     `;
@@ -197,7 +190,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
 
     return html`
       <div class="custom">
-        <div class="custom-title">Custom tile URL · ${title}</div>
+        <div class="custom-title">${this._t("editor.custom_title", { name: title })}</div>
         <input
           type="text"
           class="custom-url"
@@ -208,7 +201,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
         <div class="custom-row">
           <input
             type="text"
-            placeholder="Subdomains, e.g. abc"
+            placeholder=${this._t("editor.custom_subdomains")}
             .value=${value?.subdomains ?? ""}
             @change=${(ev: Event) =>
               update({ subdomains: (ev.target as HTMLInputElement).value.trim() || undefined })}
@@ -217,7 +210,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
             type="number"
             min="1"
             max="22"
-            placeholder="Max zoom"
+            placeholder=${this._t("editor.custom_max_zoom")}
             .value=${value?.max_zoom ? String(value.max_zoom) : ""}
             @change=${(ev: Event) =>
               update({ max_zoom: Number((ev.target as HTMLInputElement).value) || undefined })}
@@ -225,7 +218,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
         </div>
         <input
           type="text"
-          placeholder="Attribution, e.g. © OpenStreetMap contributors"
+          placeholder=${this._t("editor.custom_attribution")}
           .value=${value?.attribution ?? ""}
           @change=${(ev: Event) =>
             update({ attribution: (ev.target as HTMLInputElement).value.trim() || undefined })}
@@ -239,13 +232,10 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
                 referrer_policy: (ev.target as HTMLInputElement).checked ? "origin" : undefined,
               })}
           />
-          <span>Send the origin (OpenStreetMap needs it)</span>
+          <span>${this._t("editor.custom_referrer")}</span>
         </label>
         <div class="custom-hint">
-          A URL containing <code>{s}</code> needs the subdomains set. Home Assistant
-          suppresses the <code>Referer</code>, and some providers — OpenStreetMap among
-          them — answer that with a blocked tile. The checkbox sends them your instance
-          host so they serve. Mind the provider's terms of use as well.
+          ${this._t("editor.custom_hint")}
         </div>
       </div>
     `;
@@ -282,18 +272,16 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
     const zones = this._zones;
     if (zones.length === 0) {
       return html`<div class="zones">
-        <div class="zones-title">Zones</div>
-        <div class="zones-hint">No zone entity with coordinates found.</div>
+        <div class="zones-title">${this._t("editor.zones")}</div>
+        <div class="zones-hint">${this._t("editor.zones_none")}</div>
       </div>`;
     }
 
     return html`
       <div class="zones">
-        <div class="zones-title">Zones</div>
+        <div class="zones-title">${this._t("editor.zones")}</div>
         <div class="zones-hint">
-          Without the checkbox the zone is not drawn. Without an icon of its own
-          the one from Home Assistant applies; the ✕ resets icon and colour back
-          to that default.
+          ${this._t("editor.zones_hint")}
         </div>
         ${zones.map((zone) => {
           const id = zone.entity_id;
@@ -308,14 +296,14 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
               <input
                 type="checkbox"
                 .checked=${shown}
-                aria-label=${`Show ${name} on the map`}
+                aria-label=${this._t("editor.show_on_map", { name })}
                 @change=${(ev: Event) =>
                   this._setZoneShown(id, (ev.target as HTMLInputElement).checked)}
               />
               <input
                 type="color"
                 .value=${color}
-                aria-label=${`Colour for ${name}`}
+                aria-label=${this._t("editor.colour_for", { name })}
                 @change=${(ev: Event) =>
                   this._setZoneColor(id, (ev.target as HTMLInputElement).value)}
               />
@@ -323,7 +311,7 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
               <button
                 class="color-reset"
                 ?disabled=${!overridden}
-                title="Reset icon and colour to the Home Assistant default"
+                title=${this._t("editor.reset_zone")}
                 @click=${() => this._resetZone(id)}
               >
                 ✕
@@ -446,11 +434,9 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
 
     return html`
       <div class="colors">
-        <div class="colors-title">People</div>
+        <div class="colors-title">${this._t("editor.people")}</div>
         <div class="colors-hint">
-          Without the checkbox a person is not on the card at all — no chip, no
-          track. The chips on the card only hide the others temporarily and leave
-          the configuration alone.
+          ${this._t("editor.people_hint")}
         </div>
         ${persons.map((person) => {
           const configured = this._config?.person_colors?.[person.id];
@@ -461,23 +447,23 @@ export class FamilyTrackingCardEditor extends LitElement implements LovelaceCard
               <input
                 type="checkbox"
                 .checked=${shown}
-                aria-label=${`Show ${person.name} on open`}
+                aria-label=${this._t("editor.show_on_open", { name: person.name })}
                 @change=${(ev: Event) =>
                   this._setShown(person.id, (ev.target as HTMLInputElement).checked)}
               />
               <input
                 type="color"
                 .value=${color}
-                aria-label=${`Colour for ${person.name}`}
+                aria-label=${this._t("editor.colour_for", { name: person.name })}
                 @change=${(ev: Event) =>
                   this._setColor(person.id, (ev.target as HTMLInputElement).value)}
               />
               <span class="color-name">${person.name}</span>
-              <span class="color-state">${configured ? color : "automatic"}</span>
+              <span class="color-state">${configured ? color : this._t("editor.automatic")}</span>
               <button
                 class="color-reset"
                 ?disabled=${!configured}
-                title="Reset to the automatic colour"
+                title=${this._t("editor.reset_colour")}
                 @click=${() => this._setColor(person.id, undefined)}
               >
                 ✕

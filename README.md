@@ -4,6 +4,8 @@
 [![Release](https://img.shields.io/github/v/release/Snaker-L/family-tracking-card)](https://github.com/Snaker-L/family-tracking-card/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+<img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/family-tracking-map.svg" alt="Four people on a map, each with their own colour and route, around a home zone" width="680">
+
 A Lovelace card that puts every Home Assistant person on one map and turns their
 location history into a **readable list of stays** instead of raw coordinates:
 

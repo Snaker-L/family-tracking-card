@@ -559,7 +559,7 @@ export class FamilyTrackingCard extends LitElement {
   /** `home` and `not_home` are technical states; show what a zone is called. */
   private _zoneName(state: string): string {
     if (state === "home") {
-      return this.hass?.states["zone.home"]?.attributes.friendly_name ?? "Zuhause";
+      return this.hass?.states["zone.home"]?.attributes.friendly_name ?? "Home";
     }
     return state;
   }
@@ -754,7 +754,7 @@ export class FamilyTrackingCard extends LitElement {
       <ha-card .header=${this._config?.title}>
         <div class="people">
           ${persons.map((person) => this._renderPerson(person))}
-          ${persons.length === 0 ? html`<div class="hint">Keine person-Entität gefunden.</div>` : nothing}
+          ${persons.length === 0 ? html`<div class="hint">No person entity found.</div>` : nothing}
         </div>
 
         <div class="controls">
@@ -773,7 +773,7 @@ export class FamilyTrackingCard extends LitElement {
               class=${this._range ? "chip picked selected" : "chip picked"}
               @click=${this._togglePicker}
               aria-expanded=${this._pickerOpen ? "true" : "false"}
-              title="Zeitraum über Kalender und Uhrzeit wählen"
+              title="Pick a range from the calendar"
             >
               <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -781,15 +781,15 @@ export class FamilyTrackingCard extends LitElement {
                      0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 16H5V8h14v11Z"
                 />
               </svg>
-              ${this._range ? formatAbsoluteRange(this._range, locale) : "Zeitraum"}
+              ${this._range ? formatAbsoluteRange(this._range, locale) : "Range"}
             </button>
           </div>
           <button
             class="chip layer"
             @click=${this._toggleLayer}
-            title=${`Aktuell: ${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).label}`}
+            title=${`Current: ${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).label}`}
           >
-            ${this._mapLayer === "street" ? "Satellit" : "Karte"}
+            ${this._mapLayer === "street" ? "Satellite" : "Map"}
           </button>
         </div>
 
@@ -797,7 +797,7 @@ export class FamilyTrackingCard extends LitElement {
 
         <div class="map-wrap" style=${fill ? "" : `height:${height}px`}>
           <div id="map-host"></div>
-          ${this._loading ? html`<div class="overlay">Lade Verlauf …</div>` : nothing}
+          ${this._loading ? html`<div class="overlay">Loading history …</div>` : nothing}
           ${this._error ? html`<div class="overlay error">${this._errorText()}</div>` : nothing}
         </div>
 
@@ -807,7 +807,7 @@ export class FamilyTrackingCard extends LitElement {
   }
 
   private get _locale(): string {
-    return this.hass?.locale?.language ?? this.hass?.language ?? "de";
+    return this.hass?.locale?.language ?? this.hass?.language ?? "en";
   }
 
   /**
@@ -844,19 +844,19 @@ export class FamilyTrackingCard extends LitElement {
 
     return html`
       <div class="picker">
-        ${field("Von", "fromDate", "fromTime")}
-        ${field("Bis", "toDate", "toTime", "gleicher Tag")}
+        ${field("From", "fromDate", "fromTime")}
+        ${field("To", "toDate", "toTime", "same day")}
         <div class="picker-foot">
           <span class="picker-hint">
             ${resolved
               ? formatAbsoluteRange(resolved, this._locale)
-              : "Mindestens ein Startdatum wählen."}
+              : "Pick a start date."}
           </span>
           <button class="chip" ?disabled=${!this._range} @click=${this._clearRange}>
-            Zurücksetzen
+            Reset
           </button>
           <button class="chip apply" ?disabled=${!resolved} @click=${this._applyRange}>
-            Anwenden
+            Apply
           </button>
         </div>
       </div>
@@ -881,7 +881,7 @@ export class FamilyTrackingCard extends LitElement {
         class=${visible ? "person shown" : "person hidden"}
         style=${`--ftc-person-color:${color}`}
         @click=${() => this._togglePerson(person.entity_id)}
-        title=${visible ? `${this._name(person)} ausblenden` : `${this._name(person)} einblenden`}
+        title=${visible ? `Hide ${this._name(person)}` : `Show ${this._name(person)}`}
         aria-pressed=${visible ? "true" : "false"}
       >
         <span class="avatar">
@@ -907,7 +907,7 @@ export class FamilyTrackingCard extends LitElement {
           aria-expanded=${this._staysOpen ? "true" : "false"}
         >
           <span class=${this._staysOpen ? "caret open" : "caret"}>▸</span>
-          <span>Aufenthalte</span>
+          <span>Stays</span>
           <span class="stays-count">${count}</span>
         </button>
       </div>
@@ -918,10 +918,10 @@ export class FamilyTrackingCard extends LitElement {
   private _renderStays(): TemplateResult {
     const entries = this._stayEntries;
     if (entries.length === 0) {
-      return html`<div class="stays empty">${this._loading ? "" : "Keine Aufenthalte im Zeitraum."}</div>`;
+      return html`<div class="stays empty">${this._loading ? "" : "No stays in this range."}</div>`;
     }
 
-    const locale = this.hass?.locale?.language ?? this.hass?.language ?? "de";
+    const locale = this.hass?.locale?.language ?? this.hass?.language ?? "en";
 
     return html`
       <div class="stays">
@@ -959,9 +959,9 @@ export class FamilyTrackingCard extends LitElement {
 
   private _errorText(): string {
     if (this._error === "no-data") {
-      return "Keine Positionsdaten im Zeitraum. Der Recorder hält standardmäßig nur 10 Tage vor.";
+      return "No location data in this range. The recorder keeps only 10 days by default.";
     }
-    return `Verlauf konnte nicht geladen werden: ${this._error}`;
+    return `Could not load history: ${this._error}`;
   }
 
   static override styles = css`

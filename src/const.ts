@@ -34,7 +34,7 @@ const ESRI_IMAGERY_ATTRIBUTION =
   "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics";
 /** basemap.at is CC BY 4.0 and asks to be named. */
 const BASEMAP_AT_ATTRIBUTION =
-  'Datenquelle: <a href="https://www.basemap.at">basemap.at</a>';
+  'Data: <a href="https://www.basemap.at">basemap.at</a>';
 
 export interface TileSpec {
   url: string;
@@ -77,7 +77,7 @@ export const STREET_STYLES = {
     ],
   },
   esri_gray: {
-    label: "Esri Grau (folgt dem Theme)",
+    label: "Esri Gray (follows your theme)",
     attribution: ESRI_ATTRIBUTION,
     layers: [
       { url: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 16 },
@@ -95,17 +95,17 @@ export const STREET_STYLES = {
     ],
   },
   esri_streets: {
-    label: "Esri Straßen",
+    label: "Esri Streets",
     attribution: ESRI_ATTRIBUTION,
     layers: [{ url: `${ESRI}/World_Street_Map/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 19 }],
   },
   esri_topo: {
-    label: "Esri Topografisch",
+    label: "Esri Topographic",
     attribution: ESRI_ATTRIBUTION,
     layers: [{ url: `${ESRI}/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 19 }],
   },
   esri_relief: {
-    label: "Esri Relief (Gelände)",
+    label: "Esri Hillshade (terrain)",
     attribution: ESRI_ATTRIBUTION,
     layers: [
       { url: `${ESRI}/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 16 },
@@ -143,14 +143,14 @@ export const STREET_STYLES = {
     ],
   },
   basemap_at: {
-    label: "basemap.at (nur Österreich)",
+    label: "basemap.at (Austria only)",
     attribution: BASEMAP_AT_ATTRIBUTION,
     layers: [
       { url: `${BASEMAP_AT}/geolandbasemap/normal/google3857/{z}/{y}/{x}.png`, maxNativeZoom: 20 },
     ],
   },
   basemap_at_gray: {
-    label: "basemap.at Grau (nur Österreich)",
+    label: "basemap.at Gray (Austria only)",
     attribution: BASEMAP_AT_ATTRIBUTION,
     layers: [
       { url: `${BASEMAP_AT}/bmapgrau/normal/google3857/{z}/{y}/{x}.png`, maxNativeZoom: 20 },
@@ -160,12 +160,12 @@ export const STREET_STYLES = {
 
 export const SATELLITE_STYLES = {
   esri_imagery: {
-    label: "Esri Luftbild",
+    label: "Esri Imagery",
     attribution: ESRI_IMAGERY_ATTRIBUTION,
     layers: [{ url: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 19 }],
   },
   esri_hybrid: {
-    label: "Esri Luftbild mit Beschriftung",
+    label: "Esri Imagery with labels",
     attribution: ESRI_IMAGERY_ATTRIBUTION,
     layers: [
       { url: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, maxNativeZoom: 19 },
@@ -180,7 +180,7 @@ export const SATELLITE_STYLES = {
     ],
   },
   basemap_at_ortho: {
-    label: "basemap.at Orthofoto 30 cm (nur Österreich)",
+    label: "basemap.at Orthophoto 30 cm (Austria only)",
     attribution: BASEMAP_AT_ATTRIBUTION,
     layers: [
       {
@@ -190,7 +190,7 @@ export const SATELLITE_STYLES = {
     ],
   },
   basemap_at_ortho_labels: {
-    label: "basemap.at Orthofoto mit Beschriftung (nur Österreich)",
+    label: "basemap.at Orthophoto with labels (Austria only)",
     attribution: BASEMAP_AT_ATTRIBUTION,
     layers: [
       {
@@ -314,9 +314,9 @@ export const MAX_MAP_HEIGHT = 2000;
 export const DEFAULTS = {
   hours_to_show: 24,
   zoom: 13,
-  // Stunden statt Tagen: der Verlauf eines Arbeitstages ist die Frage, die hier
-  // tatsächlich gestellt wird. Für längere Zeiträume gibt es den Kalender, und
-  // der Recorder hält ohnehin nur zehn Tage vor.
+  // Hours rather than days: how a day went is the question actually asked here.
+  // Anything longer is what the calendar is for, and the recorder keeps only ten
+  // days by default anyway.
   time_ranges: [1, 4, 6, 8, 12, 16],
   map_layer: "street" as MapLayerId,
   map_height: 480 as number | typeof FILL_HEIGHT,
@@ -326,7 +326,7 @@ export const DEFAULTS = {
   // Off by default: an existing card must not suddenly grow circles on its map.
   show_zones: false,
   geocode: true,
-  // Aus: der Zonenname genügt meistens, und jede Auflösung kostet eine Anfrage.
+  // Off: the zone name is usually enough, and every lookup costs a request.
   zone_addresses: false,
 };
 
@@ -395,7 +395,7 @@ export function resolveStyle(layer: MapLayerId, dark: boolean, styles: StyleChoi
     if (custom?.url) {
       return {
         key: `${layer}:custom:${custom.url}`,
-        label: "Eigene URL",
+        label: "Custom URL",
         attribution: custom.attribution ?? "",
         layers: [
           {

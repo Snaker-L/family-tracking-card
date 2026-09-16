@@ -10,14 +10,13 @@ integration exists and why it ships the card with it.
 
 from __future__ import annotations
 
-import json
 import logging
-from pathlib import Path
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.loader import async_get_integration
 
 from . import websocket
 from .const import (
@@ -40,9 +39,16 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
-def _version() -> str:
-    manifest = json.loads((Path(__file__).parent / "manifest.json").read_text(encoding="utf-8"))
-    return manifest.get("version", "0")
+async def _version(hass: HomeAssistant) -> str:
+    """
+    The version from the manifest Home Assistant has already read.
+
+    Reading the file here would be a blocking call inside the event loop, which
+    Home Assistant rightly complains about: everything else waits while the disk
+    is touched. The loader hands out the parsed manifest for free.
+    """
+    integration = await async_get_integration(hass, DOMAIN)
+    return str(integration.version or "0")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -72,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     websocket.async_register(hass)
-    await async_register_card(hass, _version())
+    await async_register_card(hass, await _version(hass))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_reload))

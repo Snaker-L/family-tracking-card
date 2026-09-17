@@ -1,0 +1,28 @@
+name: Validate
+
+# The same checks HACS runs when a repository is submitted for inclusion, plus
+# Home Assistant's own manifest check. Running them here means finding out now
+# rather than from a closed pull request months later.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Both actions track moving requirements, so a repository can stop being
+    # valid without anything here changing.
+    - cron: "0 5 * * 1"
+
+jobs:
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hacs/action@main
+        with:
+          category: integration
+
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: home-assistant/actions/hassfest@master

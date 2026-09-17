@@ -1,6 +1,6 @@
 {
   "name": "ha-family-tracking",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Lovelace card showing Home Assistant persons on a map with a readable stay timeline.",
   "author": "Alexander Hruza",
   "license": "MIT",

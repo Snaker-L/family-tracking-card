@@ -1,4 +1,4 @@
-export const CARD_VERSION = "0.4.3";
+export const CARD_VERSION = "0.4.4";
 
 export const CARD_TAG = "family-tracking-card";
 export const EDITOR_TAG = "family-tracking-card-editor";

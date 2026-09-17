@@ -13,8 +13,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: corepack enable
@@ -22,7 +22,7 @@ jobs:
       - run: yarn typecheck
       - run: yarn test
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install pytest
@@ -40,6 +40,6 @@ jobs:
           zip -r "$GITHUB_WORKSPACE/family_tracking.zip" . -x '*.pyc' -x '__pycache__/*'
 
       - name: Attach to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: family_tracking.zip

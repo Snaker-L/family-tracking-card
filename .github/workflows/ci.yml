@@ -1,0 +1,32 @@
+name: CI
+
+# The release workflow only runs when a release is published, so until now a
+# broken build would first show up at the worst possible moment. This runs the
+# same checks on every push.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn typecheck
+      - run: yarn test
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: pip install pytest
+      - run: pytest tests/integration -q
+
+      # Building here means a broken bundle is caught on push, not when a
+      # release is already tagged.
+      - run: yarn build

@@ -1,0 +1,28 @@
+# Keeps the build from quietly rotting. The release workflow already warns that
+# its actions target a deprecated Node version -- this is what catches that
+# before a release run stops working.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps"
+    # One pull request for the build tooling instead of five. Lit and Leaflet
+    # stay separate: those change what the card does.
+    groups:
+      build-tooling:
+        patterns:
+          - "@rollup/*"
+          - "rollup"
+          - "typescript"
+          - "tsx"
+          - "@types/*"

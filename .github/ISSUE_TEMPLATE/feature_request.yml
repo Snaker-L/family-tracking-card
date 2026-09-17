@@ -1,0 +1,33 @@
+name: Feature request
+description: Something is missing
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: |
+        The situation, not the solution. Knowing what you are actually after
+        often turns up a simpler way than the one you had in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: How you imagine it
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part
+      options:
+        - The card
+        - The sensors
+        - Presence or tracker handling
+        - Addresses and geocoding
+        - Something else
+    validations:
+      required: true

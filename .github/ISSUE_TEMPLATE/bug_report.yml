@@ -1,0 +1,74 @@
+name: Bug report
+description: Something does not work
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill in the versions below. Most reports about the card not
+        showing up come down to a version mismatch or a stale browser, and
+        those two fields settle it immediately.
+
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens
+      description: What you did, and what you saw instead of what you expected.
+    validations:
+      required: true
+
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.9.2"
+    validations:
+      required: true
+
+  - type: input
+    id: integration-version
+    attributes:
+      label: Family Tracking version
+      description: Settings → Devices & services → Family Tracking, or the HACS entry.
+      placeholder: "0.4.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - The card on a dashboard
+        - The card editor
+        - The sensors or their values
+        - Setting the integration up
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: |
+        Settings → System → Logs, filtered for `family_tracking`. For anything
+        about the card, the browser console (F12) is the one that matters.
+      render: text
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: Only for card problems.
+      placeholder: "Firefox 143 on Windows"
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before reporting
+      options:
+        - label: I am on the latest release
+          required: true
+        - label: I reloaded the page with Ctrl+Shift+R
+          required: true

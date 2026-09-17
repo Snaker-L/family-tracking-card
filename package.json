@@ -1,6 +1,6 @@
 {
-  "name": "family-tracking-card",
-  "version": "0.4.2",
+  "name": "ha-family-tracking",
+  "version": "0.4.3",
   "description": "Lovelace card showing Home Assistant persons on a map with a readable stay timeline.",
   "author": "Alexander Hruza",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "build": "rollup -c",
     "watch": "rollup -c --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "test": "node --import tsx --test test/*.test.ts",
+    "test": "node --import tsx --test tests/card/*.test.ts",
     "deploy": "yarn build && node scripts/deploy.mjs"
   },
   "dependencies": {

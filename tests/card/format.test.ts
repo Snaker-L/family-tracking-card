@@ -6,7 +6,7 @@ import {
   formatDuration,
   formatRange,
   formatSpan,
-} from "../src/format.ts";
+} from "../../src/format.ts";
 
 describe("formatDuration", () => {
   it("renders the example from the specification", () => {

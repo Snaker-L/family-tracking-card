@@ -1,8 +1,8 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { LANGUAGES, languageOf, localize, personStateKey } from "../src/localize.ts";
-import { EDITOR_SCHEMA, SATELLITE_STYLES, STREET_STYLES } from "../src/const.ts";
+import { LANGUAGES, languageOf, localize, personStateKey } from "../../src/localize.ts";
+import { EDITOR_SCHEMA, SATELLITE_STYLES, STREET_STYLES } from "../../src/const.ts";
 
 describe("Sprache bestimmen", () => {
   it("nimmt die Sprache, die Home Assistant meldet", () => {

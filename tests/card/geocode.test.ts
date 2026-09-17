@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 
-import { cacheKeyFor, shortLabel } from "../src/geocode.ts";
+import { cacheKeyFor, shortLabel } from "../../src/geocode.ts";
 
 describe("cacheKeyFor", () => {
   it("rounds to about eleven metres so nearby samples share a lookup", () => {

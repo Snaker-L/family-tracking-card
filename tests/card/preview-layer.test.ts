@@ -5,7 +5,7 @@ import {
   clearPreviewLayer,
   notePreviewLayer,
   peekPreviewLayer,
-} from "../src/preview-layer.ts";
+} from "../../src/preview-layer.ts";
 
 describe("Notiz des Editors an die Vorschau", () => {
   beforeEach(() => clearPreviewLayer());

@@ -1,7 +1,7 @@
 # Family Tracking
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
-[![Release](https://img.shields.io/github/v/release/Snaker-L/family-tracking-card)](https://github.com/Snaker-L/family-tracking-card/releases)
+[![Release](https://img.shields.io/github/v/release/Snaker-L/ha-family-tracking)](https://github.com/Snaker-L/ha-family-tracking/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A Home Assistant integration that works out where each person actually is — and
@@ -9,11 +9,11 @@ a map card, shipped with it, that shows the day as a readable list of stays
 instead of raw coordinates.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list below" width="355">
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list below" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
 </p>
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/family-tracking-card/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
 </p>
 
 **One install, nothing to register.** The integration serves the card and keeps
@@ -49,11 +49,11 @@ their own icon, and the stay list underneath.
 
 ## Install
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Snaker-L&repository=family-tracking-card&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Snaker-L&repository=ha-family-tracking&category=integration)
 
 The button adds this repository to HACS on your own instance; then click
 **Download** and restart Home Assistant. By hand: HACS → ⋮ → *Custom
-repositories* → URL `https://github.com/Snaker-L/family-tracking-card`,
+repositories* → URL `https://github.com/Snaker-L/ha-family-tracking`,
 category **Integration**.
 
 Then Settings → Devices & services → **Add integration** → *Family Tracking*.

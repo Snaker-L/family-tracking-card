@@ -714,24 +714,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"family-tracking-card@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "family-tracking-card@workspace:."
-  dependencies:
-    "@rollup/plugin-node-resolve": "npm:^16.0.0"
-    "@rollup/plugin-terser": "npm:^0.4.4"
-    "@rollup/plugin-typescript": "npm:^12.1.2"
-    "@types/leaflet": "npm:^1.9.16"
-    "@types/node": "npm:^22.10.0"
-    leaflet: "npm:^1.9.4"
-    lit: "npm:^3.2.1"
-    rollup: "npm:^4.34.0"
-    tslib: "npm:^2.8.1"
-    tsx: "npm:^4.19.2"
-    typescript: "npm:^5.7.3"
-  languageName: unknown
-  linkType: soft
-
 "fdir@npm:^6.5.0":
   version: 6.5.0
   resolution: "fdir@npm:6.5.0"
@@ -776,6 +758,24 @@ __metadata:
   checksum: 10c0/386d011a553e02bc594ac2ca0bd6d9e4c22d7fa8cfbfc448a6d148c59ea881b092db9dbe3547ae4b88e55f1b01f7c4a2ecc53b310c042793e63aa44cf6c257f2
   languageName: node
   linkType: hard
+
+"ha-family-tracking@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "ha-family-tracking@workspace:."
+  dependencies:
+    "@rollup/plugin-node-resolve": "npm:^16.0.0"
+    "@rollup/plugin-terser": "npm:^0.4.4"
+    "@rollup/plugin-typescript": "npm:^12.1.2"
+    "@types/leaflet": "npm:^1.9.16"
+    "@types/node": "npm:^22.10.0"
+    leaflet: "npm:^1.9.4"
+    lit: "npm:^3.2.1"
+    rollup: "npm:^4.34.0"
+    tslib: "npm:^2.8.1"
+    tsx: "npm:^4.19.2"
+    typescript: "npm:^5.7.3"
+  languageName: unknown
+  linkType: soft
 
 "hasown@npm:^2.0.3":
   version: 2.0.4

@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install pytest
-      - run: pytest tests -q
+      - run: pytest tests/integration -q
 
       # Builds the card straight into the integration, which then serves it.
       - run: yarn build

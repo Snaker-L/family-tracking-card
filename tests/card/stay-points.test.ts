@@ -10,7 +10,7 @@ import {
   sanitizePoints,
   staysOf,
   type Stay,
-} from "../src/stay-points.ts";
+} from "../../src/stay-points.ts";
 import { HOME_LAT, HOME_LON, eastOf, minutes, northOf, point } from "./helpers.ts";
 
 const OPTS = { radius: 120, minDurationMs: 5 * 60_000 };

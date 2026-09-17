@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 
-import { toTrackPoints } from "../src/history.ts";
+import { toTrackPoints } from "../../src/history.ts";
 
 describe("toTrackPoints", () => {
   it("carries state and attributes forward across compressed entries", () => {

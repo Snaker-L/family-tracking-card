@@ -14,7 +14,7 @@ import sys
 import types
 from pathlib import Path
 
-PACKAGE = Path(__file__).resolve().parents[1] / "custom_components" / "family_tracking"
+PACKAGE = Path(__file__).resolve().parents[2] / "custom_components" / "family_tracking"
 
 if "family_tracking" not in sys.modules:
     stub = types.ModuleType("family_tracking")

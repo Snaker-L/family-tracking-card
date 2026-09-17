@@ -49,7 +49,7 @@ console.info(
   name: "Family Tracking Card",
   description: "Persons on a map, with a readable list of stays instead of raw coordinates.",
   preview: true,
-  documentationURL: "https://github.com/Snaker-L/family-tracking-card",
+  documentationURL: "https://github.com/Snaker-L/ha-family-tracking",
 });
 
 /** Everything the card holds for one person. */

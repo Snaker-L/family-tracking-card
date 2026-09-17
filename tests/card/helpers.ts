@@ -1,4 +1,4 @@
-import type { TrackPoint } from "../src/types.ts";
+import type { TrackPoint } from "../../src/types.ts";
 
 /** Reference location: Vienna city centre. */
 export const HOME_LAT = 48.2082;

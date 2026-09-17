@@ -6,7 +6,7 @@ import {
   resolveRange,
   toDateField,
   toTimeField,
-} from "../src/time-range.ts";
+} from "../../src/time-range.ts";
 
 /** Local time, so the expectations survive whatever zone the tests run in. */
 const at = (y: number, m: number, d: number, h = 0, min = 0, s = 0, ms = 0) =>

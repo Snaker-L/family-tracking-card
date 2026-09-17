@@ -25,7 +25,7 @@ import {
   zoneVisual,
   type StreetStyleId,
   type TileStyle,
-} from "../src/const";
+} from "../../src/const";
 
 const allStyles: [string, TileStyle][] = [
   ...Object.entries(STREET_STYLES),

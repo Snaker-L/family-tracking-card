@@ -12,11 +12,11 @@
     "person",
     "websocket_api"
   ],
-  "documentation": "https://github.com/Snaker-L/family-tracking-card",
+  "documentation": "https://github.com/Snaker-L/ha-family-tracking",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/Snaker-L/family-tracking-card/issues",
+  "issue_tracker": "https://github.com/Snaker-L/ha-family-tracking/issues",
   "requirements": [],
-  "version": "0.4.2",
+  "version": "0.4.3",
   "after_dependencies": []
 }

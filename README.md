@@ -144,6 +144,9 @@ Tile styles — `street_style`: `osm`, `esri_gray` (follows your theme),
   [`src/localize.ts`](src/localize.ts) and one file under
   [`custom_components/family_tracking/translations/`](custom_components/family_tracking/translations/).
 - **Person pictures** come from the person entity; without one you get initials.
+- **The integration brings its own icon.** Home Assistant 2026.3 and newer read
+  it from `custom_components/family_tracking/brand/`; older versions show a
+  placeholder instead.
 
 ## License
 

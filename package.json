@@ -14,8 +14,7 @@
     "build": "rollup -c",
     "watch": "rollup -c --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "test": "node --import tsx --test tests/card/*.test.ts",
-    "deploy": "yarn build && node scripts/deploy.mjs"
+    "test": "node --import tsx --test tests/card/*.test.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

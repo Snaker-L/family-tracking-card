@@ -17,3 +17,11 @@ __pycache__/
 
 # Das Kartenbündel wird gebaut und beim Release beigelegt
 custom_components/family_tracking/www/
+
+# Local development helpers: the Home Assistant test container, the deploy
+# script, the tile prober. None of them is needed to install this or to build a
+# release, and they only add noise for anyone reading the repository. They stay
+# on disk for whoever set them up.
+.devcontainer/
+dev/
+scripts/

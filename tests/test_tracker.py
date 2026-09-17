@@ -1,11 +1,6 @@
 """The rules that decide which tracker moves a person."""
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components"))
-
-from family_tracking.tracker import (  # noqa: E402
+from family_tracking.tracker import (
     Fix,
     compass_point,
     direction_of_travel,

@@ -77,8 +77,12 @@ Per person, one device with:
 
 | Entity | State | Notable attributes |
 |---|---|---|
-| `sensor.<name>_location` | zone name, or the address outside one | `presence`, `source`, `latitude`, `longitude`, `gps_accuracy`, `distance_from_home`, `direction`, `street`, `city`, `postcode`, `country`, `last_decision`, `last_rejected` |
-| `sensor.<name>_distance_from_home` | kilometres | `direction` |
+| `sensor.<name>_location` | zone name, or the address outside one | `presence`, `source`, `latitude`, `longitude`, `gps_accuracy`, `distance_from_home`, `direction`, `bearing`, `street`, `city`, `postcode`, `country`, `last_decision`, `last_rejected` |
+| `sensor.<name>_distance_from_home` | kilometres | `direction`, `bearing` |
+
+`direction` is how the person is moving relative to home (`towards home`,
+`away from home`, `stationary`); `bearing` is where they are from it (`N`, `SE`,
+…). Two different questions, so two attributes.
 
 `last_decision` says why the current fix was accepted (`first-fix`,
 `zone-change`, `same-source`, `more-accurate`) and `last_rejected` why the most

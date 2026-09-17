@@ -91,3 +91,20 @@ class TestDirection:
         assert compass_point(90) == "E"
         assert compass_point(181) == "S"
         assert compass_point(315) == "NW"
+
+class TestDirectionIsOnlyMovement:
+    """The two questions must stay apart: how someone moves, and where they are.
+
+    Mixing them put a compass point into `direction` whenever no movement was
+    detected, so a person standing at home read "SE" -- true as a bearing,
+    meaningless as a direction of travel, and impossible to tell apart.
+    """
+
+    def test_movement_never_returns_a_compass_point(self):
+        bewegungen = {"towards home", "away from home", "stationary"}
+        for jetzt, vorher in [(1000, 2000), (2000, 1000), (1000, 1010), (1000, None), (0, 0)]:
+            assert direction_of_travel(jetzt, vorher) in bewegungen
+
+    def test_the_compass_stays_a_compass(self):
+        assert compass_point(135) == "SE"
+        assert compass_point(135) not in {"towards home", "away from home", "stationary"}

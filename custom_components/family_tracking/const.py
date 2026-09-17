@@ -47,6 +47,7 @@ ATTR_PRESENCE: Final = "presence"
 ATTR_ZONE: Final = "zone"
 ATTR_DISTANCE: Final = "distance_from_home"
 ATTR_DIRECTION: Final = "direction"
+ATTR_BEARING: Final = "bearing"
 ATTR_UPDATED: Final = "location_updated"
 ATTR_REASON: Final = "last_decision"
 

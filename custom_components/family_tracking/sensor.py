@@ -10,6 +10,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
+    ATTR_BEARING,
     ATTR_DIRECTION,
     ATTR_DISTANCE,
     ATTR_PERSON,
@@ -119,6 +120,8 @@ class LocationSensor(_Base):
         if person.distance is not None:
             data[ATTR_DISTANCE] = round(person.distance)
             data[ATTR_DIRECTION] = person.direction
+            if person.bearing:
+                data[ATTR_BEARING] = person.bearing
         if person.address is not None:
             data.update(person.address.as_dict())
         return data
@@ -146,4 +149,8 @@ class DistanceSensor(_Base):
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:
-        return {ATTR_PERSON: self._person.person_id, ATTR_DIRECTION: self._person.direction}
+        return {
+            ATTR_PERSON: self._person.person_id,
+            ATTR_DIRECTION: self._person.direction,
+            ATTR_BEARING: self._person.bearing,
+        }

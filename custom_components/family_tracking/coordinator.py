@@ -42,7 +42,11 @@ class PersonState:
     presence: str = PRESENCE_UNKNOWN
     distance: float | None = None
     previous_distance: float | None = None
+    #: How the person is moving relative to home.
     direction: str = "stationary"
+    #: Where they are from home, as a compass point. A different question from
+    #: the one above, and mixing the two into one attribute made both useless.
+    bearing: str = ""
     address: Address | None = None
     #: Why the fix in use was accepted.
     last_reason: str = ""
@@ -223,10 +227,9 @@ class FamilyTrackingCoordinator:
                     person.previous_distance = person.distance
                     person.distance = metres
                     person.direction = direction_of_travel(metres, person.previous_distance)
-                    if person.direction == "stationary" and metres > 0:
-                        person.direction = compass_point(
-                            bearing(float(home_lat), float(home_lon), fix.latitude, fix.longitude)
-                        )
+                    person.bearing = compass_point(
+                        bearing(float(home_lat), float(home_lon), fix.latitude, fix.longitude)
+                    )
 
         person.presence = presence_of(
             fix.zone,

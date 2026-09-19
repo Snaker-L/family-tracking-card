@@ -11,7 +11,15 @@
 
 const ENDPOINT = "https://nominatim.openstreetmap.org/reverse";
 const MIN_REQUEST_GAP_MS = 1100;
-const CACHE_KEY = "family-tracking-card:geocode";
+/*
+ * The `:2` is a version, and bumping it throws the stored labels away.
+ *
+ * Needed the moment the integration learned to name a shopping centre instead
+ * of the street around it: this cache is consulted before anything is asked,
+ * so a stay resolved last week would go on reading "Grinzinger Straße 112"
+ * for a month no matter what the integration now answers.
+ */
+const CACHE_KEY = "family-tracking-card:geocode:2";
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /** ~11 m at the equator: fine enough for a stay, coarse enough to reuse. */
 const CACHE_PRECISION = 4;
@@ -54,11 +62,15 @@ async function viaServer(
     });
     serverGeocoding = true;
     return result?.label || undefined;
-  } catch {
-    // Either the integration is not installed or it is not ready. Both mean the
-    // card has to do it itself, and asking again for every stay would only cost
-    // a round trip each time.
-    serverGeocoding = false;
+  } catch (err) {
+    // Not the same thing twice. `unknown_command` means the integration is not
+    // installed, and then asking again for every stay only costs a round trip
+    // each time. Anything else -- most often "not_ready" while Home Assistant
+    // is still starting up -- is over in a minute, and giving up on it for the
+    // rest of the page would hand back the worse answer all evening.
+    if ((err as { code?: string } | undefined)?.code === "unknown_command") {
+      serverGeocoding = false;
+    }
     return null;
   }
 }
@@ -66,6 +78,14 @@ async function viaServer(
 interface CacheEntry {
   label: string;
   at: number;
+  /**
+   * Set when the label came from asking Nominatim directly rather than from
+   * the integration. Those answers know nothing about shopping centres, so
+   * they are kept for this page and no longer: written to storage, a lookup
+   * made while Home Assistant was still starting would outlive the reason it
+   * was ever needed.
+   */
+  direct?: boolean;
 }
 
 export const cacheKeyFor = (lat: number, lon: number): string =>
@@ -119,7 +139,8 @@ function persist(): void {
   persistHandle = window.setTimeout(() => {
     persistHandle = undefined;
     try {
-      window.localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(cache())));
+      const lasting = [...cache()].filter(([, entry]) => !entry.direct);
+      window.localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(lasting)));
     } catch {
       // Quota exceeded or private mode: the in-memory cache still works.
     }
@@ -185,7 +206,7 @@ export async function reverseGeocode(
       if (!response.ok) return undefined;
       const label = shortLabel(await response.json());
       if (!label) return undefined;
-      cache().set(key, { label, at: Date.now() });
+      cache().set(key, { label, at: Date.now(), direct: true });
       persist();
       return label;
     } catch {

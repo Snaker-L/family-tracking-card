@@ -16,5 +16,5 @@
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Snaker-L/ha-family-tracking/issues",
-  "version": "0.6.0"
+  "version": "0.6.1"
 }

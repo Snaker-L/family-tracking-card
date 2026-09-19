@@ -49,9 +49,15 @@ export function formatDistance(metres: number): string {
     : `${(metres / 1000).toFixed(1)} km`;
 }
 
-/** `6 h`, `24 h`, `3 d`, `7 d` for the range buttons. */
+/**
+ * `6 h`, `24 h`, `2 d`, `7 d` for the range menu.
+ *
+ * A full day stays in hours: it is the end of the hour list the menu offers, and
+ * reading `1 d` between `22 h` and the calendar makes the step look like a jump
+ * to another unit when it is just the next entry.
+ */
 export function formatRange(hours: number): string {
-  return hours % 24 === 0 && hours >= 24 ? `${hours / 24} d` : `${hours} h`;
+  return hours > 24 && hours % 24 === 0 ? `${hours / 24} d` : `${hours} h`;
 }
 
 export function formatCoordinates(lat: number, lon: number): string {

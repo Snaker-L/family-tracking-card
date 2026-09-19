@@ -51,7 +51,8 @@ describe("formatDistance", () => {
 describe("formatRange", () => {
   it("expresses whole days as days", () => {
     assert.equal(formatRange(6), "6 h");
-    assert.equal(formatRange(24), "1 d");
+    assert.equal(formatRange(24), "24 h");
+    assert.equal(formatRange(48), "2 d");
     assert.equal(formatRange(168), "7 d");
   });
 });

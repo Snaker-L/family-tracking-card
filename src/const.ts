@@ -306,18 +306,29 @@ export const MIN_MAP_HEIGHT = 160;
 export const MAX_MAP_HEIGHT = 2000;
 
 /**
+ * The window the card opens on: the current day from midnight, not the last 24
+ * hours. Asked "where was everyone today", a rolling window answers with half of
+ * yesterday, and the stay list then starts mid-evening for no reason anybody can
+ * see. Midnight is the boundary people actually mean.
+ */
+export const TODAY = "today";
+
+/** A rolling window in hours, or the calendar day so far. */
+export type TimeRange = number | typeof TODAY;
+
+/**
  * Fixed behaviour of the card. Only `time_ranges`, `show_stays`, `show_zones`
  * and `geocode` are still configurable; the rest was removed from the config on
  * purpose, to keep the editor down to the handful of things that actually get
  * changed.
  */
 export const DEFAULTS = {
-  hours_to_show: 24,
+  range: TODAY as TimeRange,
   zoom: 13,
   // Hours rather than days: how a day went is the question actually asked here.
   // Anything longer is what the calendar is for, and the recorder keeps only ten
   // days by default anyway.
-  time_ranges: [1, 4, 6, 8, 12, 16],
+  time_ranges: [1, 4, 6, 8, 12, 16, 18, 20, 22, 24],
   map_layer: "street" as MapLayerId,
   map_height: 480 as number | typeof FILL_HEIGHT,
   stay_radius: 120,

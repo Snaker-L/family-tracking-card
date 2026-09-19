@@ -13,9 +13,11 @@ import {
   resolveMapHeight,
   resolveStyle,
   sanitizeStyles,
+  TODAY,
   zoneGeometry,
   zoneVisual,
   type MapLayerId,
+  type TimeRange,
 } from "./const";
 import { fetchPersonHistory, HistoryError, withCurrentState } from "./history";
 import { buildTimeline, staysOf, type Segment, type Stay } from "./stay-points";
@@ -29,6 +31,7 @@ import {
   resolveRange,
   toDateField,
   toTimeField,
+  windowStart,
   type AbsoluteRange,
   type RangeFields,
 } from "./time-range";
@@ -82,7 +85,7 @@ export class FamilyTrackingCard extends LitElement {
   /** Reactive UI state, deliberately separate from the config. */
   @state() private _hidden: string[] = [];
   @state() private _staysOpen = true;
-  @state() private _timeRange = DEFAULTS.hours_to_show;
+  @state() private _timeRange: TimeRange = DEFAULTS.range;
   /** An absolute range picked from the calendar; overrides the rolling window. */
   @state() private _range?: AbsoluteRange;
   @state() private _pickerOpen = false;
@@ -150,7 +153,7 @@ export class FamilyTrackingCard extends LitElement {
       // `hidden_persons` removes a person from the card altogether, so the
       // runtime toggles start clean: everything still listed is also shown.
       this._hidden = [];
-      this._timeRange = DEFAULTS.hours_to_show;
+      this._timeRange = DEFAULTS.range;
       this._range = undefined;
       this._mapLayer = layer ?? DEFAULTS.map_layer;
       // Force the first load.
@@ -391,9 +394,15 @@ export class FamilyTrackingCard extends LitElement {
     if (persons.length === 0) return;
 
     const ids = persons.map((person) => person.entity_id);
+    // The day view carries the date, because "today" on its own never changes
+    // and a card left open overnight would keep showing yesterday.
+    const window =
+      this._timeRange === TODAY
+        ? `${TODAY}:${new Date().toDateString()}`
+        : `${this._timeRange}`;
     const query = this._range
       ? `${this._range.start}-${this._range.end}|${ids.join(",")}`
-      : `${this._timeRange}|${ids.join(",")}`;
+      : `${window}|${ids.join(",")}`;
 
     if (query !== this._lastQuery) {
       this._lastQuery = query;
@@ -425,7 +434,7 @@ export class FamilyTrackingCard extends LitElement {
     const end = this._range ? new Date(this._range.end) : new Date();
     const start = this._range
       ? new Date(this._range.start)
-      : new Date(end.getTime() - this._timeRange * 3_600_000);
+      : new Date(windowStart(end.getTime(), this._timeRange));
 
     // One request per person, in parallel. `allSettled` because a single person
     // without recorder data must not blank out everybody else.
@@ -679,11 +688,40 @@ export class FamilyTrackingCard extends LitElement {
       : this._hidden.filter((id) => id !== entityId);
   }
 
-  private _selectRange(hours: number): void {
-    if (this._timeRange === hours && !this._range) return;
-    this._timeRange = hours;
+  private _selectRange(value: TimeRange): void {
+    if (this._timeRange === value && !this._range) return;
+    this._timeRange = value;
     this._range = undefined;
     this._pickerOpen = false;
+  }
+
+  /** Reads the menu, where every value arrives as a string. */
+  private _onRangeMenu(ev: Event): void {
+    const value = (ev.target as HTMLSelectElement).value;
+    // The placeholder standing in for an active calendar range.
+    if (value === "") return;
+    this._selectRange(value === TODAY ? TODAY : Number(value));
+  }
+
+  /**
+   * Back to the state a freshly loaded card is in.
+   *
+   * Only the things the user can change while looking at the card: everybody
+   * visible again, the default window, the configured tiles, the stay list
+   * open. The configuration itself is not touched -- that belongs to the
+   * editor, and silently rewriting it from the card would be a nasty surprise.
+   */
+  private _clearAll(): void {
+    this._hidden = [];
+    this._timeRange = DEFAULTS.range;
+    this._range = undefined;
+    this._pickerOpen = false;
+    this._staysOpen = true;
+    this._mapLayer = DEFAULTS.map_layer;
+    // The view is framed per set of persons, which may not have changed; say so
+    // explicitly, otherwise the map keeps whatever the user had panned to.
+    this._map.resetFit();
+    this._lastPaint = "";
   }
 
   /**
@@ -693,7 +731,7 @@ export class FamilyTrackingCard extends LitElement {
   private _togglePicker(): void {
     if (!this._pickerOpen && !this._range) {
       const end = Date.now();
-      const start = end - this._timeRange * 3_600_000;
+      const start = windowStart(end, this._timeRange);
       this._fields = {
         fromDate: toDateField(start),
         toDate: toDateField(end),
@@ -750,16 +788,32 @@ export class FamilyTrackingCard extends LitElement {
 
         <div class="controls">
           <div class="ranges">
-            ${ranges.map(
-              (hours) => html`
-                <button
-                  class=${hours === this._timeRange && !this._range ? "chip selected" : "chip"}
-                  @click=${() => this._selectRange(hours)}
-                >
-                  ${formatRange(hours)}
-                </button>
-              `
-            )}
+            <select
+              class=${this._range ? "chip menu" : "chip menu selected"}
+              aria-label=${this._t("card.range_menu")}
+              title=${this._t("card.range_menu")}
+              @change=${this._onRangeMenu}
+            >
+              ${this._range
+                ? html`<option value="" .selected=${true}>&ndash;</option>`
+                : nothing}
+              <option
+                value=${TODAY}
+                .selected=${!this._range && this._timeRange === TODAY}
+              >
+                ${this._t("card.today")}
+              </option>
+              ${ranges.map(
+                (hours) => html`
+                  <option
+                    value=${String(hours)}
+                    .selected=${!this._range && this._timeRange === hours}
+                  >
+                    ${formatRange(hours)}
+                  </option>
+                `
+              )}
+            </select>
             <button
               class=${this._range ? "chip picked selected" : "chip picked"}
               @click=${this._togglePicker}
@@ -775,17 +829,22 @@ export class FamilyTrackingCard extends LitElement {
               ${this._range ? formatAbsoluteRange(this._range, locale) : this._t("card.range")}
             </button>
           </div>
-          <button
-            class="chip layer"
-            @click=${this._toggleLayer}
-            title=${this._t("card.layer_current", {
-              label: this._t(
-                `style.${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).id}`
-              ),
-            })}
-          >
-            ${this._t(this._mapLayer === "street" ? "card.layer_to_satellite" : "card.layer_to_street")}
-          </button>
+          <div class="tools">
+            <button
+              class="chip layer"
+              @click=${this._toggleLayer}
+              title=${this._t("card.layer_current", {
+                label: this._t(
+                  `style.${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).id}`
+                ),
+              })}
+            >
+              ${this._t(this._mapLayer === "street" ? "card.layer_to_satellite" : "card.layer_to_street")}
+            </button>
+            <button class="chip" @click=${this._clearAll} title=${this._t("card.clear_title")}>
+              ${this._t("card.clear")}
+            </button>
+          </div>
         </div>
 
         ${this._pickerOpen ? this._renderPicker() : nothing}
@@ -1070,6 +1129,7 @@ export class FamilyTrackingCard extends LitElement {
       justify-content: space-between;
       gap: 8px;
       padding: 8px 12px;
+      flex-wrap: wrap;
     }
 
     .ranges {
@@ -1077,6 +1137,13 @@ export class FamilyTrackingCard extends LitElement {
       gap: 6px;
       flex-wrap: wrap;
     }
+
+    .tools {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
 
     .chip {
       padding: 4px 12px;
@@ -1100,6 +1167,29 @@ export class FamilyTrackingCard extends LitElement {
       align-items: center;
       gap: 6px;
       font-variant-numeric: tabular-nums;
+    }
+
+    /* The menu is a chip like the others, minus what browsers add to a select:
+       their own font, the inherited height and, on WebKit, the inner padding. */
+    .chip.menu {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 26px;
+      line-height: 1.4;
+      /* The arrow, drawn rather than left to the platform, so it follows the
+         chip colour when the chip is selected. */
+      background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+      background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .chip.menu option {
+      /* Popups are drawn by the platform, which does not inherit the chip's
+         white-on-accent and would otherwise render white on white. */
+      color: var(--primary-text-color);
+      background: var(--card-background-color, #fff);
     }
 
     /* Drawn rather than an emoji. A glyph the font does not carry shows up as

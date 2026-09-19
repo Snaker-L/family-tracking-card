@@ -170,6 +170,18 @@ export class TrackMap {
     this.stayMarkers[index]?.openPopup();
   }
 
+  /**
+   * Forgets which set of persons the view was framed for, so the next render
+   * fits the map again even though nothing about the tracks changed.
+   *
+   * Needed by the reset button: it puts the card back to its default window,
+   * and leaving the map wherever the user had panned to would hide the very
+   * thing they just asked to see.
+   */
+  resetFit(): void {
+    this.fittedSignature = "";
+  }
+
   /** Redraws the overlay. The base map, centre and zoom stay untouched. */
   render(options: TrackRenderOptions): void {
     if (!this.map || !this.overlay) return;

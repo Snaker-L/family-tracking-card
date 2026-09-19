@@ -13,6 +13,8 @@
  * read as UTC by some engines, which would shift every range by the offset.
  */
 
+import { TODAY, type TimeRange } from "./const";
+
 /** The four inputs, exactly as the form fields hold them. */
 export interface RangeFields {
   /** `YYYY-MM-DD`, as produced by `<input type="date">`. */
@@ -109,4 +111,21 @@ export function toTimeField(at: number): string {
   const date = new Date(at);
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/**
+ * Where the rolling window starts, given where it ends.
+ *
+ * `TODAY` means local midnight, and it is found with `setHours` rather than by
+ * subtracting 24 hours: on the two days a year the clocks change, a day is 23
+ * or 25 hours long, and only the calendar knows which. Subtracting would land
+ * an hour into yesterday every spring.
+ */
+export function windowStart(end: number, range: TimeRange): number {
+  if (range === TODAY) {
+    const midnight = new Date(end);
+    midnight.setHours(0, 0, 0, 0);
+    return midnight.getTime();
+  }
+  return end - range * 3_600_000;
 }

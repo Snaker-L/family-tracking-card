@@ -9,7 +9,7 @@ a map card, shipped with it, that shows the day as a readable list of stays
 instead of raw coordinates.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-card.png" alt="The card: person chips, range buttons, a map with a track, and the stay list below" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-card.png" alt="The card: person chips, the range menu, a map with a track, and the stay list below" width="355">
   <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
 </p>
 <p>
@@ -43,9 +43,10 @@ minutes: `just_arrived` and `just_left`.
 **Distance and direction from home**, so an automation can act before somebody
 pulls into the driveway.
 
-**The map card**: everyone at once in their own colour, preset ranges plus a
-calendar for an exact window, street and satellite tiles, zones as circles with
-their own icon, and the stay list underneath.
+**The map card**: everyone at once in their own colour, a range menu from the
+current day down to a single hour plus a calendar for an exact window, street
+and satellite tiles, zones as circles with their own icon, and the stay list
+underneath. It opens on today, and one button puts everything back.
 
 ## Install
 
@@ -107,7 +108,7 @@ Set at install and changeable afterwards under *Configure*:
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `title` | string | – | Card header |
-| `time_ranges` | list | `[1, 4, 6, 8, 12, 16]` | Preset ranges in hours; the calendar is always there |
+| `time_ranges` | list | `[1, 4, 6, 8, 12, 16, 18, 20, 22, 24]` | Entries of the range menu, in hours. *Today* heads the menu and the calendar sits beside it; neither can be configured away |
 | `map_height` | number \\| `fill` | `480` | Height in pixels, or fill the space the card is given |
 | `street_style` / `satellite_style` | see below | `esri_gray` / `esri_imagery` | Tiles |
 | `custom_street` / `custom_satellite` | map | – | Own tile URL, when the style is `custom` |
@@ -135,6 +136,10 @@ Tile styles — `street_style`: `osm`, `esri_gray` (follows your theme),
   Raise `purge_keep_days` if you need more.
 - **A stay inside a zone is exact** — arrival and departure come from the state
   changes. Only the parts outside any zone are clustered.
+- **The card opens on today, not on the last 24 hours.** Asked where everyone
+  has been, a rolling window answers with half of yesterday; midnight is the
+  boundary people mean. *Reset* returns to it, along with everything else you
+  changed while looking at the card.
 - **The map re-frames only when you change who is on it.** A new time range,
   incoming positions and switching to satellite leave your view alone.
 - **Nominatim allows one request per second and asks for caching.** The

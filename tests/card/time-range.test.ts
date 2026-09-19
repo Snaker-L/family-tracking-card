@@ -6,7 +6,9 @@ import {
   resolveRange,
   toDateField,
   toTimeField,
+  windowStart,
 } from "../../src/time-range.ts";
+import { DEFAULTS, TODAY } from "../../src/const.ts";
 
 /** Local time, so the expectations survive whatever zone the tests run in. */
 const at = (y: number, m: number, d: number, h = 0, min = 0, s = 0, ms = 0) =>
@@ -92,5 +94,46 @@ describe("Zeitraum anzeigen und zurückschreiben", () => {
   it("bleibt kurz vor Mitternacht auf demselben Tag", () => {
     strictEqual(toDateField(at(2026, 9, 3, 23, 59)), "2026-09-03");
     strictEqual(toDateField(at(2026, 9, 3, 0, 1)), "2026-09-03");
+  });
+});
+
+describe("Startfenster der Karte", () => {
+  it("beginnt bei TODAY um Mitternacht desselben Tages", () => {
+    strictEqual(windowStart(at(2026, 9, 19, 14, 37), TODAY), at(2026, 9, 19));
+  });
+
+  /* Kurz nach Mitternacht ist das Fenster fast leer -- richtig so: gefragt ist
+     der heutige Tag, nicht die letzten 24 Stunden. */
+  it("liefert um 00:05 nur fünf Minuten", () => {
+    const end = at(2026, 9, 19, 0, 5);
+    strictEqual(end - windowStart(end, TODAY), 5 * 60_000);
+  });
+
+  it("rechnet eine Stundenzahl weiterhin rückwärts", () => {
+    strictEqual(windowStart(at(2026, 9, 19, 14, 0), 6), at(2026, 9, 19, 8, 0));
+  });
+
+  /* Über Mitternacht zurück, das darf die Stundenvariante ausdrücklich. */
+  it("greift bei 12 h auf den Vortag zurück", () => {
+    strictEqual(windowStart(at(2026, 9, 19, 6, 0), 12), at(2026, 9, 18, 18, 0));
+  });
+
+  /* Der Grund für setHours statt einer Subtraktion: An der Zeitumstellung ist
+     ein Tag 23 oder 25 Stunden lang. In Europa/Wien fällt sie auf den 29.03.2026,
+     anderswo nicht -- deshalb wird hier nur die Kalendergrenze selbst geprüft. */
+  it("trifft die Kalendergrenze auch am Tag der Zeitumstellung", () => {
+    const mittags = at(2026, 3, 29, 12, 0);
+    const start = new Date(windowStart(mittags, TODAY));
+    strictEqual(start.getDate(), 29);
+    strictEqual(start.getHours(), 0);
+    strictEqual(start.getMinutes(), 0);
+  });
+
+  it("verwendet TODAY als Werkseinstellung", () => {
+    strictEqual(DEFAULTS.range, TODAY);
+  });
+
+  it("bietet Stunden bis 24 an", () => {
+    deepStrictEqual(DEFAULTS.time_ranges, [1, 4, 6, 8, 12, 16, 18, 20, 22, 24]);
   });
 });

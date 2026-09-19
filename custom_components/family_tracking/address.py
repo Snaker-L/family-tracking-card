@@ -102,3 +102,24 @@ def parse(payload: dict[str, Any]) -> Address:
         state=address.get("state") or "",
         country=address.get("country") or "",
     )
+
+
+def merge_venue(address: Address | None, venue: str) -> Address | None:
+    """
+    Let the enclosing place speak for the address it contains.
+
+    Reverse geocoding answers "what is nearest", and inside a shopping centre
+    that is a coffee bar, a bookshop, or the street the car park faces -- never
+    the name on the building everybody uses. Where something encloses the fix,
+    it is the better answer, and the parts of the address stay untouched so the
+    sensor attributes still carry the street and the postcode.
+    """
+    if not venue:
+        return address
+    if address is None:
+        # No address at all, but a name for the place is an answer in itself.
+        return Address(label=venue, name=venue)
+
+    address.label = ", ".join(part for part in (venue, address.city) if part)
+    address.name = venue
+    return address

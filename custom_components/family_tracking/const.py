@@ -68,6 +68,31 @@ CACHE_TTL_DAYS: Final = 90
 STORAGE_KEY: Final = f"{DOMAIN}.geocode_cache"
 STORAGE_VERSION: Final = 1
 
+#: Bumped whenever a stored label would come out differently today. Entries
+#: written under an older schema are dropped on load rather than migrated:
+#: they are a convenience, and keeping them would hide the very change that
+#: raised the number -- a shopping centre visited last week would go on
+#: reading as the street outside it.
+CACHE_SCHEMA: Final = 2
+
+# --- enclosing places -------------------------------------------------------
+
+OVERPASS_URL: Final = "https://overpass-api.de/api/interpreter"
+
+#: Overpass is donated capacity, and containment queries are cheap only for the
+#: person asking. One every two seconds, on top of a cache that holds for
+#: months, keeps this well inside what the service asks of a client.
+VENUE_MIN_REQUEST_INTERVAL: Final = 2.0
+
+#: Containment queries are answered in about a second, but the public instance
+#: sometimes queues them. Waiting is free -- the label appears when it appears,
+#: and nothing in the card is blocked on it.
+VENUE_TIMEOUT: Final = 30
+
+#: Answers that mean "busy, not wrong". Worth one more ask; anything else is a
+#: real no.
+VENUE_RETRY_STATUS: Final = frozenset({429, 502, 503, 504})
+
 # --- frontend ---------------------------------------------------------------
 
 CARD_FILENAME: Final = "family-tracking-card.js"

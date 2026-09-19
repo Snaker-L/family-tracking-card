@@ -78,7 +78,7 @@ Per person, one device with:
 
 | Entity | State | Notable attributes |
 |---|---|---|
-| `sensor.<name>_location` | zone name, or the address outside one | `presence`, `source`, `latitude`, `longitude`, `gps_accuracy`, `distance_from_home`, `direction`, `bearing`, `street`, `city`, `postcode`, `country`, `last_decision`, `last_rejected` |
+| `sensor.<name>_location` | zone name, the enclosing place, or the address | `presence`, `source`, `latitude`, `longitude`, `gps_accuracy`, `distance_from_home`, `direction`, `bearing`, `street`, `city`, `postcode`, `country`, `last_decision`, `last_rejected` |
 | `sensor.<name>_distance_from_home` | kilometres | `direction`, `bearing` |
 
 `direction` is how the person is moving relative to home (`towards home`,
@@ -142,8 +142,19 @@ Tile styles — `street_style`: `osm`, `esri_gray` (follows your theme),
   again.
 - **The map re-frames only when you change who is on it.** A new time range,
   incoming positions and switching to satellite leave your view alone.
-- **Nominatim allows one request per second and asks for caching.** The
-  integration does both, for the whole household at once.
+- **A shopping centre is named, not addressed.** Reverse geocoding answers
+  "what is nearest", which in the Donauzentrum is a phone shop and in the Q19 a
+  coffee bar — and the street outside is no better, because nobody arranges to
+  meet at Wagramer Straße 94. So the integration also asks Overpass which
+  outline the fix falls *inside*, and a named shopping centre wins over both.
+  Only tightly bounded places count; see the note in
+  [`venue.py`](custom_components/family_tracking/venue.py).
+- **Two services, one lookup.** Nominatim allows one request per second and
+  asks for caching; Overpass is donated capacity. The integration keeps to
+  both, asks them at the same time rather than one after the other, and caches
+  the result for the whole household. Where Overpass cannot be reached the
+  address is still shown — but it is not cached, so the centre is named as soon
+  as the service answers again.
 - **Both speak your language.** English and German are translated; anything else
   falls back to English. A language is one table in
   [`src/localize.ts`](src/localize.ts) and one file under

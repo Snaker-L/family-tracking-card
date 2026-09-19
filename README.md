@@ -9,11 +9,11 @@ a map card, shipped with it, that shows the day as a readable list of stays
 instead of raw coordinates.
 
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-card.png" alt="The card: person chips, the range menu, a map with a track, and the stay list below" width="355">
-  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-satellite.jpg" alt="The same card on satellite tiles, with the view unchanged" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-card.png?v=0.6.0" alt="The card: person chips, the range menu, a map with a track, and the stay list below" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-satellite.jpg?v=0.6.0" alt="The same card on satellite tiles, with the view unchanged" width="355">
 </p>
 <p>
-  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-editor.png" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
+  <img src="https://raw.githubusercontent.com/Snaker-L/ha-family-tracking/main/docs/screenshot-editor.png?v=0.6.0" alt="The card editor: toggles, map height, tile styles, a colour per person and an icon per zone" width="355">
 </p>
 
 **One install, nothing to register.** The integration serves the card and keeps

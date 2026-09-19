@@ -46,7 +46,7 @@ pulls into the driveway.
 **The map card**: everyone at once in their own colour, a range menu from the
 current day down to a single hour plus a calendar for an exact window, street
 and satellite tiles, zones as circles with their own icon, and the stay list
-underneath. It opens on today, and one button puts everything back.
+underneath. It opens on today.
 
 ## Install
 
@@ -138,8 +138,8 @@ Tile styles — `street_style`: `osm`, `esri_gray` (follows your theme),
   changes. Only the parts outside any zone are clustered.
 - **The card opens on today, not on the last 24 hours.** Asked where everyone
   has been, a rolling window answers with half of yesterday; midnight is the
-  boundary people mean. *Reset* returns to it, along with everything else you
-  changed while looking at the card.
+  boundary people mean. *Today* heads the range menu, so it is one pick away
+  again.
 - **The map re-frames only when you change who is on it.** A new time range,
   incoming positions and switching to satellite leave your view alone.
 - **Nominatim allows one request per second and asks for caching.** The

@@ -704,27 +704,6 @@ export class FamilyTrackingCard extends LitElement {
   }
 
   /**
-   * Back to the state a freshly loaded card is in.
-   *
-   * Only the things the user can change while looking at the card: everybody
-   * visible again, the default window, the configured tiles, the stay list
-   * open. The configuration itself is not touched -- that belongs to the
-   * editor, and silently rewriting it from the card would be a nasty surprise.
-   */
-  private _clearAll(): void {
-    this._hidden = [];
-    this._timeRange = DEFAULTS.range;
-    this._range = undefined;
-    this._pickerOpen = false;
-    this._staysOpen = true;
-    this._mapLayer = DEFAULTS.map_layer;
-    // The view is framed per set of persons, which may not have changed; say so
-    // explicitly, otherwise the map keeps whatever the user had panned to.
-    this._map.resetFit();
-    this._lastPaint = "";
-  }
-
-  /**
    * Opens the calendar, prefilled with the window currently on screen so there
    * is something to adjust rather than four empty fields.
    */
@@ -829,22 +808,17 @@ export class FamilyTrackingCard extends LitElement {
               ${this._range ? formatAbsoluteRange(this._range, locale) : this._t("card.range")}
             </button>
           </div>
-          <div class="tools">
-            <button
-              class="chip layer"
-              @click=${this._toggleLayer}
-              title=${this._t("card.layer_current", {
-                label: this._t(
-                  `style.${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).id}`
-                ),
-              })}
-            >
-              ${this._t(this._mapLayer === "street" ? "card.layer_to_satellite" : "card.layer_to_street")}
-            </button>
-            <button class="chip" @click=${this._clearAll} title=${this._t("card.clear_title")}>
-              ${this._t("card.clear")}
-            </button>
-          </div>
+          <button
+            class="chip layer"
+            @click=${this._toggleLayer}
+            title=${this._t("card.layer_current", {
+              label: this._t(
+                `style.${resolveStyle(this._mapLayer, this.hass?.themes?.darkMode ?? false, this._styles).id}`
+              ),
+            })}
+          >
+            ${this._t(this._mapLayer === "street" ? "card.layer_to_satellite" : "card.layer_to_street")}
+          </button>
         </div>
 
         ${this._pickerOpen ? this._renderPicker() : nothing}
@@ -1136,12 +1110,6 @@ export class FamilyTrackingCard extends LitElement {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-    }
-
-    .tools {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
     }
 
 
